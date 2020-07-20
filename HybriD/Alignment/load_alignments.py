@@ -1,7 +1,7 @@
-from HybriD.Detection.Alignment import Alignment, Contig
+from HybriD.Alignment.alignment import Alignment, Contig
 
 
-def loadQuastContigs(path):
+def load_alignments(path):
     # quast file rows are:
     # 0     1   2   3   4           5       6   7           8
     # S1	E1	S2	E2	Reference	Contig	IDY	Ambiguous	Best_group

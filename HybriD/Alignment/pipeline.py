@@ -1,13 +1,13 @@
 from typing import List
 
-from HybriD.Detection.Alignment import Alignment
-from HybriD.Detection.Pattern import Pattern
+from HybriD.Alignment.alignment import Alignment
+from HybriD.Alignment.pattern import Pattern
 
 downstream = 1
 upstream = 0
 
 
-def asInversionPattern(first_alignment, second_alignment):
+def as_inversion(first_alignment, second_alignment):
     return Pattern(
         chromosome=first_alignment.chromosome,
         start=first_alignment.alignment_start,
@@ -16,7 +16,7 @@ def asInversionPattern(first_alignment, second_alignment):
     )
 
 
-def analyzeTwoAlignmentsContigs(contigs):
+def find_contig_patterns(contigs):
     """ Initial step to SV detection. Analizes each contig
     individually, Detect's simple suppaterns.
     which later can be searched for more advanced SVs.
@@ -41,11 +41,11 @@ def analyzeTwoAlignmentsContigs(contigs):
                 first, second = second, first
                 first_before_second = True
 
-            same_direction = (getMappingDirection(first) == getMappingDirection(second))
+            same_direction = (get_mapping_direction(first) == get_mapping_direction(second))
             if not same_direction:
-                inversions.append(asInversionPattern(first, second))
+                inversions.append(as_inversion(first, second))
             else:
-                both_downstream = getMappingDirection(first)
+                both_downstream = get_mapping_direction(first)
                 if both_downstream:
                     mapped_in_order = first.contig_start < second.contig_start
                     if not mapped_in_order:
@@ -76,7 +76,7 @@ def analyzeTwoAlignmentsContigs(contigs):
             "others": others}
 
 
-def getMappingDirection(alignment):
+def get_mapping_direction(alignment):
     """
     @return: 0 if upstream, 1 if downstream
     """
@@ -96,7 +96,7 @@ def pairwise(it):
         return
 
 
-def analyzeOneAlignmentContigs(alignments):
+def find_alignment_patterns(alignments):
     alignments.sort(key=lambda alignment: (alignment.chromosome, alignment.alignment_start))
     insertions = []
     duplications = []
@@ -135,7 +135,7 @@ def analyzeOneAlignmentContigs(alignments):
     }
 
 
-def analyzeInversions(inversion_patterns):
+def filter_inversions(inversion_patterns):
     inversion_patterns.sort(key=lambda alignment: (alignment.chromosome, alignment.start))
     two_supporting_alignments = []
     one_supporting_alignment = []
@@ -164,7 +164,7 @@ def analyzeInversions(inversion_patterns):
     }
 
 
-def searchForDuplications(potential_duplications: List[Pattern], alignments: List[Alignment]):
+def find_duplications(potential_duplications: List[Pattern], alignments: List[Alignment]):
     potential_duplications.sort(key=lambda pattern: (pattern.chromosome, pattern.start))
     alignments.sort(key=lambda alignment: (alignment.chromosome, alignment.alignment_start))
     alignments_dictionary = {}

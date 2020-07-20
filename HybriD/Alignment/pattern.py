@@ -9,7 +9,7 @@ class ComplexPattern:
     def __init__(self, patterns):
         self.patterns = patterns
 
-def patternsAsBed(patterns, output_path):
+def patterns_to_bed(patterns, output_path):
     with open(output_path, "w") as f:
         for pattern in patterns:
             line = " ".join([pattern.chromosome, str(pattern.start), str(pattern.end)])
