@@ -1,5 +1,5 @@
 import argparse
-from HybriD.Interface import csv2bed, find_sv, find_roi
+from HybriD.Interface import csv2bed, find_sv, find_roi, roi_statistics
 
 def run():
     # create the top-level parser
@@ -10,6 +10,7 @@ def run():
     csv2bed.add_subparser(subparsers)
     find_sv.add_subparser(subparsers)
     find_roi.add_subparser(subparsers)
+    roi_statistics.add_subparser(subparsers)
 
     args = parser.parse_args()
 
@@ -19,3 +20,5 @@ def run():
         find_roi.action(args)
     elif args.action == csv2bed.TEXT:
         csv2bed.action(args)
+    elif args.action == roi_statistics.TEXT:
+        roi_statistics.action(args)

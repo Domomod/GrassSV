@@ -60,9 +60,22 @@ def find_contig_patterns(contigs):
                         gap_between = first.alignment_end < second.alignment_start
                         intersecting = first.alignment_end > second.alignment_start
                         if gap_between:
-                            deletions.append(contig)
+                            deletions.append(
+                                Pattern(
+                                    start=first.alignment_end,
+                                    end=second.alignment_start,
+                                    chromosome=first.chromosome,
+                                    supporting_alignments=[first, second]
+                                ))
                         elif intersecting:
-                            duplication_breakpoints.append(contig)
+                            duplication_breakpoints.append(
+                                #TODO: figure out start and end coordinates
+                                Pattern(
+                                    start=first.alignment_start,
+                                    end=second.alignment_end,
+                                    chromosome=first.chromosome,
+                                    supporting_alignments=[first, second]
+                                ))
                         else:
                             insertions.append(contig)
                 else:
