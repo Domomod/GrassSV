@@ -5,7 +5,7 @@ TEXT = 'find_sv'
 
 
 def add_subparser(subparsers):
-    find_sv = subparsers.add_parser(TEXT, help='finds structural variations based on contig\'s mappings')
+    find_sv = subparsers.add_parser(TEXT, help='finds structural variations based on contig\'s alignments')
     find_sv.add_argument('alignments', type=str)
     find_sv.add_argument('-o','--output', type=str, metavar='path', help="output folder", required=True)
     #TODO: implement csv output

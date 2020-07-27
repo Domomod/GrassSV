@@ -11,7 +11,7 @@ def chromosomesSizes(input_path, output_path):
             chromosome_name = words[1].split(':')[1]
             output_file.write(chromosome_name+' '+lenght+'\n')
     input_file.close()
-    output_file.close(1219438)
+    output_file.close()
 
 
 #This function marks (set 4th paramether of every line to true) reads

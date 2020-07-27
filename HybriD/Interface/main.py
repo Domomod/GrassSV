@@ -1,16 +1,16 @@
 import argparse
-from HybriD.Interface import csv2bed, find_sv, find_roi, roi_statistics
+from HybriD.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed
 
 def run():
     # create the top-level parser
-    parser = argparse.ArgumentParser(prog='PROG')
-    parser.add_argument('--foo', action='store_true', help='help for foo arg.')
-    subparsers = parser.add_subparsers(help='help for subcommand', dest='action')
+    parser = argparse.ArgumentParser(prog='HybriD.py')
+    subparsers = parser.add_subparsers(help='HybriD consits of multiple scripts:', dest='action')
 
-    csv2bed.add_subparser(subparsers)
+    rsvsim2bed.add_subparser(subparsers)
     find_sv.add_subparser(subparsers)
     find_roi.add_subparser(subparsers)
     roi_statistics.add_subparser(subparsers)
+    quast2bed.add_subparser(subparsers)
 
     args = parser.parse_args()
 
@@ -18,7 +18,9 @@ def run():
         find_sv.action(args)
     elif args.action == find_roi.TEXT:
         find_roi.action(args)
-    elif args.action == csv2bed.TEXT:
-        csv2bed.action(args)
+    elif args.action == rsvsim2bed.TEXT:
+        rsvsim2bed.action(args)
     elif args.action == roi_statistics.TEXT:
         roi_statistics.action(args)
+    elif args.action == quast2bed.TEXT:
+        quast2bed.action(args)
