@@ -68,6 +68,9 @@ def cutIntoSingleChromosome(input_path,limit,output_file):
             chromosome.append(words)
     checkSingleChromosome(chromosome,limit,output_file)
 
+def run(input_file, output_file, limit_coverage):
+    cutIntoSingleChromosome(input_file, output_file, limit_coverage)
+
 if __name__ == "__main__":
 
     cutIntoSingleChromosome(input_path = "depth",

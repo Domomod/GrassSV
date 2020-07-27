@@ -1,14 +1,13 @@
 import argparse
-
-TEXT = 'find_roi'
+from HybriD.Scripts import  find_roi
+TEXT = 'roi'
 
 
 def add_subparser(subparsers):
-    find_roi = subparsers.add_parser(TEXT, help='finds regions of intrest based on mapping coverage')
-    find_roi.add_argument('a', type=str)
-
+    roi = subparsers.add_parser(TEXT, help='finds regions of intrest based on mapping coverage')
+    roi.add_argument('input',  type=str)
+    roi.add_argument('output', type=str)
+    roi.add_argument('limit', type=int)
 
 def action(args):
-
-
-    pass
+    find_roi.run(input_file=args.input, output_file=args.output, limit_coverage=args.limit)
