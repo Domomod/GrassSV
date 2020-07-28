@@ -58,6 +58,3 @@ def add_subparser(subparsers):
     fastq_regions.add_argument('-f2', '--fastq2', help="Output file number 2", type=str, required=True)
     fastq_regions.add_argument('-s', '--sam', help="Input sam file", type=str, required=True)
     fastq_regions.add_argument('-d', '--depth', help="Input depth file", type=str, required=True)
-
-    args = fastq_regions.parse_args()
-    action(args)
