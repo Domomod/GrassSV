@@ -143,4 +143,6 @@ HybriD/.idea/modules.xml
 
 venv/
 
+.idea
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,linux,pycharm
