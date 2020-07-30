@@ -1,5 +1,5 @@
 import argparse
-from HybriD.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, fastq_regions
+from HybriD.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, fastq_regions, pipeline_runner
 
 
 def run():
@@ -13,6 +13,7 @@ def run():
     roi_statistics.add_subparser(subparsers)
     quast2bed.add_subparser(subparsers)
     fastq_regions.add_subparser(subparsers)
+    pipeline_runner.add_subparser(subparsers)
 
     args = parser.parse_args()
 
@@ -28,3 +29,5 @@ def run():
         quast2bed.action(args)
     elif args.action == fastq_regions.TEXT:
         fastq_regions.action(args)
+    elif args.action == pipeline_runner.TEXT:
+        pipeline_runner.action(args)
