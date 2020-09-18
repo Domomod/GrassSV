@@ -1,6 +1,5 @@
 
-#This function takes sizes of chromosomes from input_path
-#and saves it in output_path
+#Rewrite header containg chromosome sizes from input to output
 def chromosomesSizes(input_path, output_path):
     input_file=open(input_path,"r")
     output_file = open(output_path, "w")
@@ -50,7 +49,7 @@ def checkSingleChromosome(chromosome,limit,output_file):
 
 #This function cuts genome into single chromosomes and then checks
 #low coverage region in chromosomes one by one
-def cutIntoSingleChromosome(input_path,limit,output_file):
+def cutIntoSingleChromosome(input_path,limit,output_file, margin=150):
     input_file=open(input_path,"r")
     chromosome=[]
     for line in input_file:  #File format: chromosome name  number of nucleotydes   coverage
