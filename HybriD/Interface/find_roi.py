@@ -10,6 +10,7 @@ def add_subparser(subparsers):
 
     roi.add_argument('limit', type=int)
     roi.add_argument('size', type=int)
+    roi.add_argument('margin_size', type=int)
 
 def action(args):
-    find_roi.run(input_file=args.input, output_file=args.output, limit_coverage=args.limit, minimum_size=args.size)
+    find_roi.run(input_file=args.input, output_file=args.output, limit_coverage=args.limit, minimum_size=args.size, margin_size=args.margin_size)
