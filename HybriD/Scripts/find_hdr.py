@@ -1,20 +1,51 @@
 import numpy as np
 
-WINDOW = 40
+from HybriD.Region.DepthRegion import DepthRegion
+
+WINDOW = 50  # TODO: wszystkie parametry jako opcjonalne do ustawienia
+THRESHOLD = 40
+MIN_CONSECUTIVE_REGION = 1000
 
 
 def find_hdr():
-    with open("in/depth") as file:
+    singleChromosome = []
+    chromosomes = []
+    with open("in/depth.save") as file:  # TODO: porozdzielaj na funkcje
         s = [i.split() for i in file.readlines()]
-        s.remove([])
-    s3 = [int(i[2]) for i in s]
-    arr = np.array([np.array(s3[i-WINDOW:i]).mean() for i in range(WINDOW, len(s3), WINDOW)])
-    last = arr[0]
-    for x, i in enumerate(arr):
-        if last + last/2 < i:
-            print(f"{x}: {i} {last}")
-        last = i
-    print("done")
+        if s.count([]) > 0:
+            s.remove([])
+        for line in s:
+            if len(singleChromosome) != 0 and line[0] != singleChromosome[0][0]:
+                chromosomes.append(singleChromosome)
+                singleChromosome = []
+            singleChromosome.append(line)
+        chromosomes.append(singleChromosome)
+    for chromosome in chromosomes:
+        chromosome_depth = [int(i[2]) for i in chromosome]
+        arr = np.array(
+            [np.array(chromosome_depth[i - WINDOW:i]).mean() for i in range(WINDOW, len(chromosome_depth), WINDOW)])
+        last = arr[0]
+        consecutive = 0
+        regions_to_serialize: [DepthRegion] = []
+        curr_start = 0
+        for x, i in enumerate(arr):
+            if i > THRESHOLD and consecutive == 0:
+                curr_start = (x - 1) * WINDOW
+            if THRESHOLD < i:
+                consecutive += 1
+            else:
+                consecutive = 0
+            if last > THRESHOLD and consecutive == 0:
+                if (x + 1) * WINDOW - curr_start > MIN_CONSECUTIVE_REGION:
+                    regions_to_serialize.append(DepthRegion(chromosome[0][0], curr_start, (x + 1) * WINDOW))
+            last = i
+        serialize(regions_to_serialize, "in/duplications.bed")
+
+
+def serialize(depthRegions: [DepthRegion], fileName: str):
+    with open(fileName, 'a+') as file:
+        for depthRegion in depthRegions:
+            file.write(str(depthRegion))
 
 
 if __name__ == "__main__":
