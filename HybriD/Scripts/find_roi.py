@@ -69,3 +69,4 @@ def find_roi(inputPath, outputPath, maxCoverage, marginSize=150, minSize=1):
 
 def run(input_file, output_file, limit_coverage, margin_size, minimum_size):
     find_roi(input_file, output_file, limit_coverage, margin_size, minimum_size)
+
