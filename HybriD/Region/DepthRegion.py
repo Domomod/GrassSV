@@ -9,20 +9,6 @@ class DepthRegion:
             return 0
         return self.start - other.end
 
-    def __gt__(self, other):
-        if self.chromosome != other.chromosome:
-            return False
-        if self == other:
-            return False
-        return self.start - other.end > 0
-
-    def __lt__(self, other):
-        if self.chromosome != other.chromosome:
-            return False
-        if self == other:
-            return False
-        return self.start - other.end < 0
-
     def __eq__(self, other):
         if self.chromosome != other.chromosome:
             return False

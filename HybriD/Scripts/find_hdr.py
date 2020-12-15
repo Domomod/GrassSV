@@ -58,6 +58,7 @@ def find_possible_regions(chromosomes, min_consecutive_region, threshold, window
 
 
 def connect_consecutive_regions(regions: [DepthRegion], min_consecutive_region):
+    regions = sorted(regions, key=lambda x: (x.chromosome, x.start, x.end))
     index = 0
     while index < len(regions) - 1:
         first = regions[index]
