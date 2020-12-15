@@ -25,7 +25,7 @@ def find_roi(inputPath, outputPath, maxCoverage, marginSize=150, minSize=1):
                 if (number == len(chromosome) - 1):  # end of region can appear on the last element
                     if (LowCoverageSize >= minSize):
                         begining = chromosome[max(LowCoverageBegining-marginSize, 0)]
-                        begining = chromosome[max(LowCoverageBegining - 500, 0)]
+                        begining = chromosome[max(LowCoverageBegining - marginSize, 0)]
                         begining.append("B")  # begining of region
                         ending = chromosome[number]  # it's the end
                         ending.append("E")  # end of region
@@ -39,9 +39,9 @@ def find_roi(inputPath, outputPath, maxCoverage, marginSize=150, minSize=1):
                         begining = chromosome[max(LowCoverageBegining-marginSize,0)]
                         begining.append("B")  # begining of region
                         ending = chromosome[min(number - 1+marginSize,len(chromosome)-1)]
-                        begining = chromosome[max(LowCoverageBegining - 500, 0)]
+                        begining = chromosome[max(LowCoverageBegining - marginSize, 0)]
                         begining.append("B")  # begining of region
-                        ending = chromosome[min(number - 1 + 500, len(chromosome) - 1)]
+                        ending = chromosome[min(number - 1 + marginSize, len(chromosome) - 1)]
                         ending.append("E")  # end of region
                         endings.append(begining)
                         endings.append(ending)
@@ -68,4 +68,5 @@ def find_roi(inputPath, outputPath, maxCoverage, marginSize=150, minSize=1):
     outputFile.close()
 
 def run(input_file, output_file, limit_coverage, margin_size, minimum_size):
-    find_roi(input_file, output_file, limit_coverage,margin_size, minimum_size)
+    find_roi(input_file, output_file, limit_coverage, margin_size, minimum_size)
+

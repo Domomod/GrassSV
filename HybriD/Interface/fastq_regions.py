@@ -13,43 +13,32 @@ def action(args):
     out_fastq_1 = args.fastq1
     out_fastq_2 = args.fastq2
 
-    with open(in_depth, 'r') as f:
-        depth_read = f.readlines()
-        depth_read = [i[:-1].split("\t") for i in depth_read]
-        depth = [Region(int(i[1]), int(i[2]), i[0]) for i in depth_read]
-    with open(in_sam, 'r') as f:
-        sam_read = f.readlines()
-        sam = [i[:-1].split('\t') for i in sam_read]  # TODO: bardziej skomplikowane wczytywanie
-        del sam_read
-        sam_instance = []
-        for i in sam:
-            if i[0][0] != "@":
-                sam_instance.append(
-                    SamInstance(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8], i[9], i[10], i[11:]))
-        del sam
+    with open(in_depth) as depth_file:
+        depth_file_content = [Region(i.split()[1], i.split()[2], i.split()[0]) for i in depth_file.readlines()]
 
-    # zapis do:
-    fastq1 = []
-    fastq2 = []
-
-    first = sam_instance[0]  # last instance
-
-    for second in sam_instance[1:]:  # s - currnet instance
-        for zero in depth:
-            if (first.rname == zero.ref and first.tlen == -second.tlen and (
-                    (zero.start <= first.pos <= zero.end) or (
-                    zero.start <= second.pos <= zero.end))) or (
-                    first.flag & 4 == 4 or first.flag & 8 == 8):
-                fastq1.append(FastqInstance(first.qname, first.seq, first.qual, 1))
-                fastq2.append(FastqInstance(second.qname, second.seq, second.qual, 2))
-        first = second
-
-    with open(out_fastq_1, 'w') as f:
-        for i in fastq1:
-            f.write(str(i))
-    with open(out_fastq_2, 'w') as f:
-        for i in fastq2:
-            f.write(str(i))
+    with open(in_sam) as sam_file:
+        with open(out_fastq_1, 'a+') as fastq1_file:
+            with open(out_fastq_2, 'a+') as fastq2_file:
+                sam_first = sam_file.readline()
+                while sam_first[0][0] == '@':
+                    sam_first = sam_file.readline()
+                sam_first = SamInstance(sam_first.split())
+                sam_second = sam_file.readline()
+                while sam_second != '':
+                    sam_second = SamInstance(sam_second.split())
+                    for currDepth in depth_file_content:
+                        same_chromosome = sam_first.rname == currDepth.ref
+                        are_paired = (sam_first.tlen == -sam_second.tlen)
+                        at_least_one_covered = (currDepth.start - len(
+                            sam_first.seq) << sam_first.pos << currDepth.end) or (currDepth.start - len(sam_second.seq) << sam_second.pos << currDepth.end)
+                        at_least_one_unmapped = sam_first.flag & 12 > 1
+                        if (
+                                same_chromosome and are_paired and at_least_one_covered) or at_least_one_unmapped:  # TODO typy
+                            fastq1_file.write(str(FastqInstance(sam_first.qname, sam_first.seq, sam_first.qual, 1)))
+                            fastq2_file.write(
+                                str(FastqInstance(sam_second.qname, sam_second.seq, sam_second.qual, 2)))
+                    sam_first = sam_second
+                    sam_second = sam_file.readline()
 
 
 def add_subparser(subparsers):
