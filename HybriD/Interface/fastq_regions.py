@@ -20,6 +20,7 @@ def action(args):
                     if are_good(first, second, currDepth):
                         fastq1_file.write(str(FastqInstance(first.qname, first.seq, first.qual, 1)))
                         fastq2_file.write(str(FastqInstance(second.qname, second.seq, second.qual, 2)))
+                        break
                 first = sam
 
 
@@ -36,13 +37,11 @@ def read_sam_file(sam_file_name: str):
 
 
 def are_good(first, second, depth) -> bool:  # TODO: rename
-    same_chromosome = first.rname == depth.ref
+    same_chromosome = first.rname == depth.name == second.rname
     are_paired = (first.tlen == -second.tlen)
-    at_least_one_covered = (depth.start - len(
-        first.seq) << first.pos << depth.end) or (depth.start - len(
-        second.seq) << second.pos << depth.end)
+    at_least_one_covered = (depth.start - len(first.seq) <= first.pos <= depth.end) or (depth.start - len(second.seq) <= second.pos <= depth.end)
     at_least_one_unmapped = first.flag & 12 > 1
-    return (same_chromosome and are_paired and at_least_one_covered) or at_least_one_unmapped
+    return are_paired and ((same_chromosome and at_least_one_covered) or at_least_one_unmapped)
 
 
 def add_subparser(subparsers):
