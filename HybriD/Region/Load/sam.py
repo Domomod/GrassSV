@@ -13,3 +13,9 @@ class SamInstance:
         self.qual = fileContent[10]  # if type(qual) == str
         if len(fileContent) > 11:
             self.atr = fileContent[11]
+
+    def __str__(self):
+        return self.rname + ":" + str(self.pos)
+
+    def __repr__(self):
+        return self.__str__()
