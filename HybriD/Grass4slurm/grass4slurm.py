@@ -108,29 +108,36 @@ class Grass4slurm:
         for coverage in Grass4slurm.coverage:
             for margin in Grass4slurm.margin:
                 reads = Grass4slurm.reads
-                coverage_folder = f"coverage_{coverage}_{margin}"
+                coverage_folder = "coverage_{}_{}".format(coverage, margin)
                 Grass4slurm.depend = -1
+                print("[*]Submiting jobs for coverage {} and margin {}".format(coverage, margin))
 
                 def submit_job(job):
                     cmd = 'sbatch' \
                           + ' --depend=afterok:{} --kill-on-invalid-dep=yes'.format(Grass4slurm.depend) if Grass4slurm.depend != -1 else '' \
                           + ' --mail-type=END,FAIL --mail-user={}'.format(Grass4slurm.mail) if Grass4slurm.mail is not None else ''
                     output = subprocess.getoutput(cmd)
+                    print(output)
                     Grass4slurm.depend = output.split(' ')[-1].strip()
 
                 if Grass4slurm.calculate_depth == True:
                     submit_job(' HybriD/Grass4slurm/calculate_depth.sh .')
+                    print('    Submited depth calculation job')
 
                 if Grass4slurm.extract_reads == True:
                     submit_job(' HybriD/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
+                    print('    Submited reads extraction job')
 
                 if Grass4slurm.assemble == True:
                     submit_job(' HybriD/Grass4slurm/run_grasshopper.sh ./{} grasshopper'.format(coverage_folder))
+                    print('    Submited assembly job')
 
                 if Grass4slurm.map_contigs == True:
                     submit_job(' HybriD/Grass4slurm/run_quast.sh ./{} quast'.format(coverage_folder))
+                    print('    Submited contigs mapping job')
 
                 if Grass4slurm.detect == True:
                     submit_job(' HybriD/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
+                    print('    Submited detection mapping job')
 
 Grass4slurm.run()
