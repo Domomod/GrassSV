@@ -67,86 +67,70 @@ class Grass4slurm:
     def check_file_existance():
         def check_file(file):
             if not os.path.isfile(file):
-                print(f"File {file} does not exist.")
+                print("File {} does not exist.".format(file))
                 exit(-1)
         def check_dir(dir):
             if not os.path.isdir(dir):
-                print(f"Directory {dir} does not exist.")
+                print("Directory {} does not exist.".format(dir))
                 exit(-1)
 
         for coverage in Grass4slurm.coverage:
             for margin in Grass4slurm.margin:
-                directory=f"coverage_{coverage}_{margin}"
+                directory="coverage_{}_{}".format(coverage, margin)
                 if Grass4slurm.extract_reads is False:
                     check_dir(directory)
 
                 if Grass4slurm.extract_reads is True or Grass4slurm.calculate_depth is True:
-                    file = f"{Grass4slurm.reads[0]}"
-                    check_file(file)
-
-                    file = f"{Grass4slurm.reads[1]}"
-                    check_file(file)
+                    check_file("{}".format(Grass4slurm.reads[0]))
+                    check_file("{}".format(Grass4slurm.reads[1]))
 
 
                 if Grass4slurm.assemble is True and Grass4slurm.extract_reads is False:
                     check_dir(directory)
-                    file = f"{directory}/filtered_reads_C1.fastq"
-                    check_file(file)
-                    file = f"{directory}/filtered_reads_C2.fastq"
-                    check_file(file)
+                    check_file("{}/filtered_reads_C1.fastq".format(directory))
+                    check_file("{}/filtered_reads_C2.fastq".format(directory))
 
                 if Grass4slurm.map_contigs is True and Grass4slurm.assemble is False:
                     check_dir(directory)
-                    check_dir(f"{directory}/grasshopper")
-                    check_file(f"{directory}/grasshopper/contigs.fasta")
+                    check_dir("{}/grasshopper".format(directory))
+                    check_file("{}/grasshopper/contigs.fasta".format(directory))
 
                 if Grass4slurm.detect is True and Grass4slurm.map_contigs is False:
                     check_dir(directory)
-                    check_dir(f"{directory}/grasshopper")
-                    check_file(f"{directory}/grasshopper/quast/contigs_reports/all_alignments_contigs.tsv")
+                    check_dir("{}/grasshopper".format(directory))
+                    check_file("{}/grasshopper/quast/contigs_reports/all_alignments_contigs.tsv".format(directory))
 
         pass
 
+    depend=-1
     @staticmethod
     def submit_jobs():
         for coverage in Grass4slurm.coverage:
             for margin in Grass4slurm.margin:
                 reads = Grass4slurm.reads
                 coverage_folder = f"coverage_{coverage}_{margin}"
-                depend = -1
+                Grass4slurm.depend = -1
 
-                def submit_job(cmd):
+                def submit_job(job):
+                    cmd = 'sbatch' \
+                          + ' --depend=afterok:{} --kill-on-invalid-dep=yes'.format(Grass4slurm.depend) if Grass4slurm.depend != -1 else '' \
+                          + ' --mail-type=END,FAIL --mail-user={}'.format(Grass4slurm.mail) if Grass4slurm.mail is not None else ''
                     output = subprocess.getoutput(cmd)
-                    depend = output.split(' ')[-1].strip()
+                    Grass4slurm.depend = output.split(' ')[-1].strip()
 
                 if Grass4slurm.calculate_depth == True:
-                    cmd = 'sbatch' \
-                             + f' --depend=afterok:{depend} --kill-on-invalid-dep=yes' if depend!= -1 else ''\
-                             + f' --mail-type=END,FAIL --mail-user={Grass4slurm.mail}' if Grass4slurm.mail is not None else ''\
-                             + f' HybriD/Grass4slurm/calculate_depth.sh .'
+                    submit_job(' HybriD/Grass4slurm/calculate_depth.sh .')
 
                 if Grass4slurm.extract_reads == True:
-                    cmd = 'sbatch' \
-                             + f' --depend=afterany:{depend} ' if depend!= -1 else ''\
-                             + f' --mail-type=END,FAIL --mail-user={Grass4slurm.mail}' if Grass4slurm.mail is not None else ''\
-                             + f' HybriD/Grass4slurm/extract_reads.sh . {coverage} {margin}'
+                    submit_job(' HybriD/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
 
                 if Grass4slurm.assemble == True:
-                    cmd = 'sbatch' \
-                             + f' --depend=afterany:{depend} ' if depend!= -1 else ''\
-                             + f' --mail-type=END,FAIL --mail-user={Grass4slurm.mail}' if Grass4slurm.mail is not None else ''\
-                             + f' HybriD/Grass4slurm/run_grasshopper.sh ./{coverage_folder} grasshopper'
+                    submit_job(' HybriD/Grass4slurm/run_grasshopper.sh ./{} grasshopper'.format(coverage_folder))
 
                 if Grass4slurm.map_contigs == True:
-                    cmd = 'sbatch' \
-                             + f' --depend=afterany:{depend} ' if depend!= -1 else ''\
-                             + f' --mail-type=END,FAIL --mail-user={Grass4slurm.mail}' if Grass4slurm.mail is not None else ''\
-                             + f' HybriD/Grass4slurm/run_quast.sh ./{coverage_folder} quast'
+                    submit_job(' HybriD/Grass4slurm/run_quast.sh ./{} quast'.format(coverage_folder))
 
                 if Grass4slurm.detect == True:
-                    cmd = 'sbatch' \
-                             + f' --depend=afterany:{depend} ' if depend!= -1 else ''\
-                             + f' --mail-type=END,FAIL --mail-user={Grass4slurm.mail}' if Grass4slurm.mail is not None else ''\
-                             + f' HybriD/Grass4slurm/extract_reads.sh . {coverage} {margin}'
+                    submit_job(' HybriD/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
 
 Grass4slurm.run()
