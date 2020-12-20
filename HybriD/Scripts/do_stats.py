@@ -1,5 +1,6 @@
 from HybriD.Alignment.pattern import Pattern
-
+from HybriD.Alignment.load_bed import  load_pattern_bed
+from HybriD.Alignment.load_csv import load_regular, load_translocation_as_separate_patterns
 def calculate_single_pair(first, second):
     if first.chromosome!=second.chromosome:
         return 0
@@ -14,38 +15,21 @@ def calculate_single_pair(first, second):
     return sizeOfIntersection/sizeOfAll*100
 
 def calculate_type(realtab, simtab, percentage):
-    realStartOfCurrentChromosome=0
-    realCurrent=0
-    simStartOfCurrentChromosome=0
-    simCurrent=0
     found=0
-    while (realCurrent<len(realtab)):
-        if realtab[realStartOfCurrentChromosome].chromosome!=realtab[realCurrent].chromosome:
-            realStartOfCurrentChromosome=realCurrent #starting a new chromosome in both tabs
-            simStartOfCurrentChromosome=simCurrent
-            while (simStartOfCurrentChromosome< len(simtab) and simtab[simStartOfCurrentChromosome].chromosome<realtab[realStartOfCurrentChromosome].chromosome):
-                simStartOfCurrentChromosome+=1
-                simCurrent=simStartOfCurrentChromosome
-        while (simCurrent<len(simtab) and simtab[simCurrent].chromosome==realtab[realCurrent].chromosome):
-            if calculate_single_pair(realtab[realCurrent],simtab[simCurrent]) >= percentage:
+
+    for real in realtab:
+        for simulated in simtab:
+            if calculate_single_pair(real, simulated) >= percentage:
                 found +=1
-            simCurrent+=1
-        simCurrent=simStartOfCurrentChromosome #setting to begining of this chromosome
-        realCurrent+=1
-    return found/len(realtab)*100
+    return str(found)+"/"+str(len(realtab))
+
 
 
 if __name__=="__main__":
-    tab1=[
-        Pattern("chr1", 1,200), #not intersecting, second inversed N
-        Pattern("chr2", 1,200), #intersecting, second inversed Y
-        Pattern("chr3",50,150), #50% N
-        Pattern("chr4",200,400), #>90% Y
-    ]
-    tab2=[
-        Pattern("chr1",300,200),
-        Pattern("chr2", 200,1),
-        Pattern("chr3", 100,150),
-        Pattern("chr4", 210,400)
-    ]
-    print(calculate_type(tab1,tab2,90))
+    pierwsze=load_translocation_as_separate_patterns("translocations.csv")
+    drugie=load_pattern_bed("deletions_contig_patterns.bed")
+
+    print(calculate_type(pierwsze,drugie,90))
+    print(calculate_type(pierwsze,drugie,70))
+    print(calculate_type(pierwsze,drugie,50))
+    print(calculate_type(pierwsze,drugie,10))
