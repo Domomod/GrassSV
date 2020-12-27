@@ -1,4 +1,4 @@
-from HybriD.Region.BioRegion import Region
+from GrassSV.Region.BioRegion import Region
 
 
 class SvFinder:
@@ -122,8 +122,8 @@ class SvFinder:
 
 
 if __name__ == "__main__":
-    from HybriD.Region.Load import quast, csv_loader
-    from HybriD.Region import check_detection_corectness
+    from GrassSV.Region.Load import quast, csv_loader
+    from GrassSV.Region import check_detection_corectness
 
     contigs = quast.loadContigs(inputFile="data/contigs/from_generated_mutations/all_alignments_contigs.tsv")
     actual_deletions = csv_loader.load_deletions("data/generated-mutations/deletions.csv")

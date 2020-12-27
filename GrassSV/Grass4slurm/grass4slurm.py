@@ -121,23 +121,23 @@ class Grass4slurm:
                     Grass4slurm.depend = output.split(' ')[-1].strip()
 
                 if Grass4slurm.calculate_depth == True:
-                    submit_job(' HybriD/Grass4slurm/calculate_depth.sh .')
+                    submit_job(' GrassSV/Grass4slurm/calculate_depth.sh .')
                     print('    Submited depth calculation job')
 
                 if Grass4slurm.extract_reads == True:
-                    submit_job(' HybriD/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
+                    submit_job(' GrassSV/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
                     print('    Submited reads extraction job')
 
                 if Grass4slurm.assemble == True:
-                    submit_job(' HybriD/Grass4slurm/run_grasshopper.sh ./{} grasshopper'.format(coverage_folder))
+                    submit_job(' GrassSV/Grass4slurm/run_grasshopper.sh ./{} grasshopper'.format(coverage_folder))
                     print('    Submited assembly job')
 
                 if Grass4slurm.map_contigs == True:
-                    submit_job(' HybriD/Grass4slurm/run_quast.sh ./{} quast'.format(coverage_folder))
+                    submit_job(' GrassSV/Grass4slurm/run_quast.sh ./{} quast'.format(coverage_folder))
                     print('    Submited contigs mapping job')
 
                 if Grass4slurm.detect == True:
-                    submit_job(' HybriD/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
+                    submit_job(' GrassSV/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
                     print('    Submited detection mapping job')
 
 Grass4slurm.run()

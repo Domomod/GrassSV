@@ -1,6 +1,6 @@
 import argparse
 
-from HybriD.Scripts import generated_mutations_to_bed
+from GrassSV.Scripts import generated_mutations_to_bed
 
 TEXT = 'rsvsim2bed'
 

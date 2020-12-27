@@ -1,6 +1,6 @@
 import numpy as np
 
-from HybriD.Region.DepthRegion import DepthRegion
+from GrassSV.Region.DepthRegion import DepthRegion
 
 TEXT = 'find_hdr'
 

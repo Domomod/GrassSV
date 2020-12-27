@@ -1,5 +1,5 @@
-from HybriD.Alignment.load_csv import load_regular, load_translocation_as_separate_patterns
-from HybriD.Alignment.load_bed import load_pattern_bed
+from GrassSV.Alignment.load_csv import load_regular, load_translocation_as_separate_patterns
+from GrassSV.Alignment.load_bed import load_pattern_bed
 
 
 

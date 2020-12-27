@@ -1,7 +1,7 @@
 from typing import List
 
-from HybriD.Alignment.alignment import Alignment
-from HybriD.Alignment.pattern import Pattern
+from GrassSV.Alignment.alignment import Alignment
+from GrassSV.Alignment.pattern import Pattern
 
 downstream = 1
 upstream = 0

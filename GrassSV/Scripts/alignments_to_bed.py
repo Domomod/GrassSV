@@ -1,6 +1,6 @@
 
 def export_to_bed(input_path, output_path):
-    from HybriD.Region.Load.csv_loader import correct_ref_name
+    from GrassSV.Region.Load.csv_loader import correct_ref_name
     input = open(input_path, "r")
 
     with open(output_path, "w") as output:
