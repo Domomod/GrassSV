@@ -1,5 +1,5 @@
 import argparse
-from HybriD.Scripts import  find_roi
+from GrassSV.Scripts import  find_roi
 TEXT = 'find_roi'
 
 

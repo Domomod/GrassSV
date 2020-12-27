@@ -1,6 +1,6 @@
 import argparse
 
-from HybriD.Alignment import load_alignments
+from GrassSV.Alignment import load_alignments
 
 TEXT = 'quast2bed'
 

@@ -1,5 +1,5 @@
 import argparse
-from HybriD.Scripts import roi_statistics
+from GrassSV.Scripts import roi_statistics
 
 TEXT = 'roi_statistics'
 

@@ -1,4 +1,4 @@
-from HybriD.Alignment.alignment import Alignment, Contig
+from GrassSV.Alignment.alignment import Alignment, Contig
 
 
 def load_alignments(path):
@@ -6,7 +6,7 @@ def load_alignments(path):
     # 0     1   2   3   4           5       6   7           8
     # S1	E1	S2	E2	Reference	Contig	IDY	Ambiguous	Best_group
 
-    from HybriD.Region.Load.csv_loader import correct_ref_name
+    from GrassSV.Region.Load.csv_loader import correct_ref_name
     input = open(path, "r")
 
     single_alignments = []

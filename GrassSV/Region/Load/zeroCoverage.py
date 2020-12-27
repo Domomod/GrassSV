@@ -1,4 +1,4 @@
-from HybriD.Region.BioRegion import Region
+from GrassSV.Region.BioRegion import Region
 
 
 def load(filename):

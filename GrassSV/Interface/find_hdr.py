@@ -1,4 +1,4 @@
-from HybriD.Scripts import find_hdr
+from GrassSV.Scripts import find_hdr
 
 TEXT = 'find_hdr'
 

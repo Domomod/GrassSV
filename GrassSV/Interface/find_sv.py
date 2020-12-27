@@ -1,5 +1,5 @@
 import argparse
-from HybriD.Alignment import  run
+from GrassSV.Alignment import  run
 
 TEXT = 'find_sv'
 

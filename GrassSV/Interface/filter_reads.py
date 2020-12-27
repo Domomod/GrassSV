@@ -2,7 +2,7 @@ from ..Region.Load.fastq import FastqInstance
 from ..Region.Load.sam import SamInstance
 from ..Region.BioRegion import Region
 
-TEXT = 'fastq_regions'
+TEXT = 'filter_reads'
 
 
 def action(args):
@@ -17,7 +17,7 @@ def action(args):
                     continue
                 second = sam
                 for currDepth in depth:
-                    if are_good(first, second, currDepth):
+                    if are_in_region_or_not_mapped(first, second, currDepth):
                         fastq1_file.write(str(FastqInstance(first.qname, first.seq, first.qual, 1)))
                         fastq2_file.write(str(FastqInstance(second.qname, second.seq, second.qual, 2)))
                         break
@@ -36,7 +36,7 @@ def read_sam_file(sam_file_name: str):
         yield SamInstance(line.split())
 
 
-def are_good(first, second, depth) -> bool:  # TODO: rename
+def are_in_region_or_not_mapped(first, second, depth) -> bool:
     same_chromosome = first.rname == depth.name == second.rname
     are_paired = (first.tlen == -second.tlen)
     at_least_one_covered = (depth.start - len(first.seq) <= first.pos <= depth.end) or (depth.start - len(second.seq) <= second.pos <= depth.end)
@@ -45,7 +45,7 @@ def are_good(first, second, depth) -> bool:  # TODO: rename
 
 
 def add_subparser(subparsers):
-    fastq_regions = subparsers.add_parser(TEXT, help="Generating fastq regions from sam")
+    fastq_regions = subparsers.add_parser(TEXT, help="Filter reads by regions of interest")
     fastq_regions.add_argument('-f1', '--fastq1', help="Output file number 1", type=str, required=True)
     fastq_regions.add_argument('-f2', '--fastq2', help="Output file number 2", type=str, required=True)
     fastq_regions.add_argument('-s', '--sam', help="Input sam file", type=str, required=True)

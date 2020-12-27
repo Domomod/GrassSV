@@ -1,6 +1,6 @@
-from HybriD.Region import BioRegion
-from HybriD.Region.Load import csv_loader
-from HybriD.Region.Load import zeroCoverage
+from GrassSV.Region import BioRegion
+from GrassSV.Region.Load import csv_loader
+from GrassSV.Region.Load import zeroCoverage
 
 def match_intersecting_regions(first_records_set, second_records_set, minimal_intersection = 0.0):
     """

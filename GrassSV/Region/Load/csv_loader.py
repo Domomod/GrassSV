@@ -1,6 +1,6 @@
 import pandas as pd
-from HybriD.Region.BioRegion import Region
-from HybriD.Region.BioRegion import RegionComposite
+from GrassSV.Region.BioRegion import Region
+from GrassSV.Region.BioRegion import RegionComposite
 
 def load_our_finder(filename):
     data = pd.read_csv(filename)

@@ -1,8 +1,8 @@
 import sys
 
-from HybriD.Alignment.pattern import patterns_to_bed, supporting_alignments_to_bed
-from HybriD.Alignment.load_alignments import load_alignments
-from HybriD.Alignment.pipeline import find_contig_patterns, filter_inversions, \
+from GrassSV.Alignment.pattern import patterns_to_bed, supporting_alignments_to_bed
+from GrassSV.Alignment.load_alignments import load_alignments
+from GrassSV.Alignment.pipeline import find_contig_patterns, filter_inversions, \
     find_alignment_patterns, find_duplications
 
 

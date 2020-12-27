@@ -1,8 +1,8 @@
 import os
 import pandas
 
-from HybriD.Alignment.alignment import Alignment
-from HybriD.Alignment.pattern import Pattern, ComplexPattern
+from GrassSV.Alignment.alignment import Alignment
+from GrassSV.Alignment.pattern import Pattern, ComplexPattern
 
 
 def correct_ref_name(ref):
