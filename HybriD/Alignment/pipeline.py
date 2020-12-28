@@ -46,40 +46,39 @@ def find_contig_patterns(contigs):
                 inversions.append(as_inversion(first, second))
             else:
                 both_downstream = get_mapping_direction(first)
-                if both_downstream:
-                    mapped_in_order = first.contig_start < second.contig_start
-                    if not mapped_in_order:
-                        potential_duplications.append(
+                mapped_in_order = (both_downstream and first.contig_start < second.contig_start) \
+                                or (not both_downstream and second.contig_end < first.contig_end)
+                if not mapped_in_order:
+                    potential_duplications.append(
+                        Pattern(
+                            start=first.alignment_start,
+                            end=second.alignment_end,
+                            chromosome=first.chromosome,
+                            supporting_alignments=[first,second]
+                        ))
+                else:
+                    gap_between = first.alignment_end < second.alignment_start
+                    intersecting = first.alignment_end > second.alignment_start
+                    if gap_between:
+                        deletions.append(
+                            Pattern(
+                                start=first.alignment_end,
+                                end=second.alignment_start,
+                                chromosome=first.chromosome,
+                                supporting_alignments=[first, second]
+                            ))
+                    elif intersecting:
+                        duplication_breakpoints.append(
+                            #TODO: figure out start and end coordinates
                             Pattern(
                                 start=first.alignment_start,
                                 end=second.alignment_end,
                                 chromosome=first.chromosome,
-                                supporting_alignments=[first,second]
+                                supporting_alignments=[first, second]
                             ))
                     else:
-                        gap_between = first.alignment_end < second.alignment_start
-                        intersecting = first.alignment_end > second.alignment_start
-                        if gap_between:
-                            deletions.append(
-                                Pattern(
-                                    start=first.alignment_end,
-                                    end=second.alignment_start,
-                                    chromosome=first.chromosome,
-                                    supporting_alignments=[first, second]
-                                ))
-                        elif intersecting:
-                            duplication_breakpoints.append(
-                                #TODO: figure out start and end coordinates
-                                Pattern(
-                                    start=first.alignment_start,
-                                    end=second.alignment_end,
-                                    chromosome=first.chromosome,
-                                    supporting_alignments=[first, second]
-                                ))
-                        else:
-                            insertions.append(contig)
-                else:
-                    others.append(contig)
+                        insertions.append(contig)
+
     return {"insertions": insertions,
             "inversions": inversions,
             "deletions": deletions,
@@ -150,15 +149,14 @@ def find_alignment_patterns(alignments):
 
 def filter_inversions(inversion_patterns):
     inversion_patterns.sort(key=lambda alignment: (alignment.chromosome, alignment.start))
-    two_supporting_alignments = []
-    one_supporting_alignment = []
+    inversions = []
     skip_next = False
     for first_pattern, second_pattern in pairwise(inversion_patterns):
         same_chromosome = second_pattern.chromosome == first_pattern.chromosome
         intersects = second_pattern.start < first_pattern.end
         if same_chromosome and intersects:
             skip_next = True
-            two_supporting_alignments.append(
+            inversions.append(
                 Pattern(
                     chromosome=first_pattern.chromosome,
                     start=second_pattern.start,
@@ -166,15 +164,12 @@ def filter_inversions(inversion_patterns):
                     supporting_alignments=first_pattern.supporting_alignments + second_pattern.supporting_alignments
                 ))
         elif not skip_next:
-            one_supporting_alignment.append(
+            inversions.append(
                 first_pattern
             )
         else:
             skip_next = False
-    return {
-        "one supporting alignment": one_supporting_alignment,
-        "two supporting alignments": two_supporting_alignments
-    }
+    return inversions
 
 
 def find_duplications(potential_duplications: List[Pattern], alignments: List[Alignment]):

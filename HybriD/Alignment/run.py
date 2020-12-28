@@ -15,7 +15,10 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
     contig_patterns = find_contig_patterns(simple_contigs)
 
     inversions_filtered = filter_inversions(contig_patterns["inversions"])
+    contig_patterns["inversions"] = inversions_filtered
+
     find_duplications(contig_patterns["potential_duplications"], alignment_patterns["others"])
+
 
     if export_patterns:
         for name, patterns in alignment_patterns.items():
@@ -29,12 +32,12 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
     if export_supporting_alignments:
         for name, patterns in alignment_patterns.items():
             if name != 'others':
-                output_path = output_folder_path + '/' + name + '_alignment_pattern_support.bed'
+                output_path = output_folder_path + '/support/' + name + '_alignment_pattern_support.bed'
                 supporting_alignments_to_bed(patterns, output_path)
 
         for name, patterns in contig_patterns.items():
-            if name not in ['others', 'translocation breakpoints']:
-                output_path = output_folder_path + '/' + name + '_contig_pattern_support.bed'
+            if name not in ['translocation breakpoints']:
+                output_path = output_folder_path + '/support/' + name + '_contig_pattern_support.bed'
                 supporting_alignments_to_bed(patterns, output_path)
 
     pass
