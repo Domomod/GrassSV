@@ -1,98 +1,7 @@
-from typing import List
+from typing import *
+from enum import Enum
 
-from GrassSV.Alignment.alignment import Alignment
-from GrassSV.Alignment.pattern import Pattern
-
-downstream = 1
-upstream = 0
-
-
-def as_inversion(first_alignment, second_alignment):
-    return Pattern(
-        chromosome=first_alignment.chromosome,
-        start=first_alignment.alignment_start,
-        end=second_alignment.alignment_end,
-        supporting_alignments=[first_alignment, second_alignment]
-    )
-
-
-def find_contig_patterns(contigs):
-    """ Initial step to SV detection. Analizes each contig
-    individually, Detect's simple suppaterns.
-    which later can be searched for more advanced SVs.
-    """
-    insertions = []
-    inversions = []
-    deletions = []
-    duplication_breakpoints = []
-    translocation_breakpoints = []
-    potential_duplications = []
-    others = []
-    for contig in contigs:
-        [first, second] = contig.alignments
-
-        same_chromosome = first.chromosome == second.chromosome
-
-        if not same_chromosome:
-            translocation_breakpoints.append(contig)
-        else:
-            first_before_second = first.alignment_start < second.alignment_start
-            if not first_before_second:
-                first, second = second, first
-                first_before_second = True
-
-            same_direction = (get_mapping_direction(first) == get_mapping_direction(second))
-            if not same_direction:
-                inversions.append(as_inversion(first, second))
-            else:
-                both_downstream = get_mapping_direction(first)
-                mapped_in_order = (both_downstream and first.contig_start < second.contig_start) \
-                                or (not both_downstream and second.contig_end < first.contig_end)
-                if not mapped_in_order:
-                    potential_duplications.append(
-                        Pattern(
-                            start=first.alignment_start,
-                            end=second.alignment_end,
-                            chromosome=first.chromosome,
-                            supporting_alignments=[first,second]
-                        ))
-                else:
-                    gap_between = first.alignment_end < second.alignment_start
-                    intersecting = first.alignment_end > second.alignment_start
-                    if gap_between:
-                        deletions.append(
-                            Pattern(
-                                start=first.alignment_end,
-                                end=second.alignment_start,
-                                chromosome=first.chromosome,
-                                supporting_alignments=[first, second]
-                            ))
-                    elif intersecting:
-                        duplication_breakpoints.append(
-                            #TODO: figure out start and end coordinates
-                            Pattern(
-                                start=first.alignment_start,
-                                end=second.alignment_end,
-                                chromosome=first.chromosome,
-                                supporting_alignments=[first, second]
-                            ))
-                    else:
-                        insertions.append(contig)
-
-    return {"insertions": insertions,
-            "inversions": inversions,
-            "deletions": deletions,
-            "duplication breakpoints": duplication_breakpoints,
-            "translocation breakpoints": translocation_breakpoints,
-            "potential_duplications": potential_duplications,
-            "others": others}
-
-
-def get_mapping_direction(alignment):
-    """
-    @return: 0 if upstream, 1 if downstream
-    """
-    return alignment.contig_start < alignment.contig_end
+from GrassSV.Alignment.alignments import Alignment, Contig, Pattern
 
 
 def pairwise(it):
@@ -109,29 +18,29 @@ def pairwise(it):
 
 
 def find_alignment_patterns(alignments):
-    alignments.sort(key=lambda alignment: (alignment.chromosome, alignment.alignment_start))
+    alignments.sort(key=lambda alignment: (alignment.chromosome, alignment.start))
     insertions = []
     duplications = []
     others = []
     for first, second in pairwise(alignments):
         same_chromosome = second.chromosome == first.chromosome
         if same_chromosome:
-            intersecting = second.alignment_start < first.alignment_end
-            adjacent = first.alignment_end + 1 == second.alignment_start
+            intersecting = second.start < first.end
+            adjacent = first.end + 1 == second.start
             if adjacent:
                 insertions.append(
                     Pattern(
                         chromosome=first.chromosome,
-                        start=first.alignment_end,
-                        end=second.alignment_start,
+                        start=first.end,
+                        end=second.start,
                         supporting_alignments=[first, second]
                     ))
             elif intersecting:
                 duplications.append(
                     Pattern(
                         chromosome=first.chromosome,
-                        start=second.alignment_start,
-                        end=first.alignment_end,
+                        start=second.start,
+                        end=first.end,
                         supporting_alignments=[first, second]
                     )
                 )
@@ -174,7 +83,7 @@ def filter_inversions(inversion_patterns):
 
 def find_duplications(potential_duplications: List[Pattern], alignments: List[Alignment]):
     potential_duplications.sort(key=lambda pattern: (pattern.chromosome, pattern.start))
-    alignments.sort(key=lambda alignment: (alignment.chromosome, alignment.alignment_start))
+    alignments.sort(key=lambda alignment: (alignment.chromosome, alignment.start))
     alignments_dictionary = {}
     for alignment in alignments:
         if not alignment.chromosome in alignments_dictionary:
@@ -186,13 +95,13 @@ def find_duplications(potential_duplications: List[Pattern], alignments: List[Al
     for potential_duplication in potential_duplications:
         # Find alignemnts intersecting with potential duplication
         interectionPossible = True
-        supporting_alignments=[]
+        supporting_alignments = []
         while interectionPossible:
             alignment = next(alignments_dictionary[potential_duplication.chromosome]["iter"])
-            interectionPossible = alignment.alignment_start < potential_duplication.end
-            if alignment.alignment_end > potential_duplication.start:
-                intersects = alignment.alignment_end < potential_duplication.end \
-                             or alignment.alignment_start < potential_duplication.end
+            interectionPossible = alignment.start < potential_duplication.end
+            if alignment.end > potential_duplication.start:
+                intersects = alignment.end < potential_duplication.end \
+                             or alignment.start < potential_duplication.end
                 if intersects:
                     supporting_alignments.append(alignment)
         pass

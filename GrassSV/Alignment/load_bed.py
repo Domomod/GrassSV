@@ -1,4 +1,4 @@
-from GrassSV.Alignment.pattern import Pattern
+from GrassSV.Alignment.alignments import Pattern
 
 
 def load_pattern_bed(path):

@@ -1,4 +1,4 @@
-from GrassSV.Alignment.alignment import Alignment, Contig
+from GrassSV.Alignment.alignments import Alignment, Contig
 
 
 def load_alignments(path):

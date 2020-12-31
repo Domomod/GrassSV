@@ -21,6 +21,6 @@ def add_subparser(subparsers):
 def action(args):
     run.run(args.alignments,
             export_patterns=args.save_patterns,
-            export_supporting_alignments=args.save_supporting_alignments,
+            export_support=args.save_supporting_alignments,
             output_folder_path=args.output)
     pass
