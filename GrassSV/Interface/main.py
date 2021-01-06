@@ -1,6 +1,5 @@
 import argparse
-from GrassSV.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, filter_reads, pipeline_runner, \
-    find_hdr
+from GrassSV.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, filter_reads, pipeline_runner, find_hdr
 
 
 def run():
