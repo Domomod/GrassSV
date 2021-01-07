@@ -9,25 +9,122 @@ from GrassSV.Alignment.alignments import TranslocationPattern, Contig, Alignment
 # Whole translocation detection pipeline
 ###################################################################################
 
+class TranslocationFilter(object):
+    def __call__(self, deletions: List[Pattern], translocation_breakpoints: List[Contig]):
+        breakpoint_filter = TranslocationBreakpointFilter()
+        deletion_breakpoint_filter = TranslocationDeletionFilter()
+        remove_misclasified_deletions = MisclassifiedDeletionFilter()
 
-####################################################################################
-# Filtering out deletions detected as translocations
-###################################################################################
-class FalseDeletionFilter(object):
-    def __call__(self, translocations: List[TranslocationPattern], deletions_unfiltered: List[Pattern]
-                 ) -> List[Pattern]:
-        deletions = []
-        for deletion in deletions_unfiltered:
-            is_deletion = True
-            i = 0
-            for translocation in translocations:
-                if do_they_intersect(translocation.source, deletion):
-                    is_deletion = False
-                    break
-            if is_deletion:
-                deletions.append(deletion)
+        translocations1, unused_breakpoints = breakpoint_filter(breakpoints=translocation_breakpoints)
+        translocations2, deletions, unused_breakpoints = deletion_breakpoint_filter(
+            translocation_breakpoints=unused_breakpoints,
+            potential_deletions=deletions)
+        translocations = translocations1 + translocations2
+        deletions = remove_misclasified_deletions(translocations=translocations,
+                                                  deletions_unfiltered=deletions)
+        return translocations, deletions, unused_breakpoints
 
-        return deletions
+#############################################################################################################
+# Filtering single chromosome translocations based on deletions adjacency
+#############################################################################################################
+
+
+
+#############################################################################################################
+# Filtering translocations based on adjacency of breakpoint contigs coming from both ends of a translocation
+#############################################################################################################
+
+class TranslocationBreakpointFilter(object):
+    """
+    Detects adjacent alignments coming from to separate contigs, which indicates those contigs
+    come from both ends of a translocation. Specifies exact breakpoints of such translocation and
+    returns a list of found translocations.
+    :param breakpoints: Contigs detecting a translocation breakpoint
+    :return:
+    """
+
+    def __call__(self, breakpoints: List[Contig]) -> Tuple[List[TranslocationPattern], List[Contig]]:
+        translocations = []
+        leftover_breakpoints = []
+        breakpoint_not_used = [True] * len(breakpoints)
+        for i, breakpoint in enumerate(breakpoints):
+            if breakpoint_not_used[i]:
+                found = False
+                for j, other_breakpoint in enumerate(breakpoints[i::]):
+                    if self.is_translocation(breakpoint, other_breakpoint):
+                        translocations.append(
+                            self.translocation_pattern()
+                        )
+                        found = True
+                        breakpoint_not_used[i + j] = False
+                        break
+                if not found:
+                    leftover_breakpoints.append(breakpoint)
+        return translocations, leftover_breakpoints
+
+    def translocation_pattern(self) -> TranslocationPattern:
+        destination_start, _, _, destination_end = self.sort_alignment_coords(*self.nonadjacent)
+        _, source_start, source_end, _ = self.sort_alignment_coords(*self.adjacent)
+        destination = Pattern(
+            start=destination_start + 1,
+            end=destination_end - 1,
+            chromosome=self.nonadjacent[0].chromosome
+        )
+
+        source = Pattern(
+            start=source_start,
+            end=source_end,
+            chromosome=self.adjacent[0].chromosome
+        )
+
+        return TranslocationPattern(
+            source=source,
+            destination=destination,
+            support_alignments=[*self.adjacent, *self.nonadjacent]
+        )
+
+    def sort_alignment_coords(self, first: Alignment, second: Alignment) -> Tuple[int, int, int, int]:
+        if first.start < second.start:
+            return first.start, first.end, second.start, second.end
+        else:
+            return second.start, second.end, first.start, first.end
+
+    def is_translocation(self, first: Contig, second: Contig) -> bool:
+        a, b = self.sort_contig(first)
+        c, d = self.sort_contig(second)
+        # We don't know apriori which contig could be on which side of translocation
+        if are_they_adjacent(a, d, margin_of_error=5):
+            self.adjacent = a, d
+            self.nonadjacent = b, c
+            return True
+        elif are_they_adjacent(b, c, margin_of_error=5):
+            self.adjacent = b, c
+            self.nonadjacent = a, d
+            return True
+        else:
+            return False
+
+    def sort_contig(self, contig: Contig) -> Tuple[Alignment, Alignment]:
+        """
+        Sorts a contig preserving both alignment direction*1 (3' to 5') or (5' to 3') and contig order.
+        Example-Legend: (0<-contig space start, 5<-contig space end)<- alignment
+        If a contig is aligned (3' to 5'), returned alignments will appear in regular order.
+        Example: (0, 150) (151 300)
+        If a contig is aligned (5' to 3'), returned alignments will appear in reversed order.
+        Example: (300 151) (150, 0)
+
+        1* Do not confuse with alignment order, which would mean order in which alignments map onto the reference genome
+        """
+        first, second = contig.alignments
+        regular_mapping_direction = first.contig_start < first.contig_end
+        if regular_mapping_direction:
+            in_order = first.contig_start < second.contig_start  # as in (0, 150) (151 300)
+        else:
+            in_order = first.contig_end > second.contig_end  # as in (300 151) (150, 0)
+
+        return (first, second) if in_order else (second, first)
+
+
 ####################################################################################
 # Filtering translocations based on overlaping of breakpoint contigs and deletions
 ###################################################################################
@@ -89,96 +186,22 @@ class TranslocationDeletionFilter(object):
         )
 
 
-#############################################################################################################
-# Filtering translocations based on adjacency of breakpoint contigs coming from both ends of a translocation
-#############################################################################################################
+####################################################################################
+# Filtering out deletions detected as translocations
+###################################################################################
 
-class TranslocationBreakpointFilter(object):
-    """
-    Detects adjacent alignments coming from to separate contigs, which indicates those contigs
-    come from both ends of a translocation. Specifies exact breakpoints of such translocation and
-    returns a list found translocations.
-    :param breakpoints: Contigs detecting a translocation breakpoint
-    :return:
-    """
+class MisclassifiedDeletionFilter(object):
+    def __call__(self, translocations: List[TranslocationPattern], deletions_unfiltered: List[Pattern]
+                 ) -> List[Pattern]:
+        deletions = []
+        for deletion in deletions_unfiltered:
+            is_deletion = True
+            i = 0
+            for translocation in translocations:
+                if do_they_intersect(translocation.source, deletion):
+                    is_deletion = False
+                    break
+            if is_deletion:
+                deletions.append(deletion)
 
-    def __call__(self, breakpoints: List[Contig]) -> Tuple[List[TranslocationPattern], List[Contig]]:
-        translocations = []
-        leftover_breakpoints = []
-        breakpoint_not_used = [True] * len(breakpoints)
-        for i, breakpoint in enumerate(breakpoints):
-            if breakpoint_not_used[i]:
-                    found = False
-                    for j, other_breakpoint in enumerate(breakpoints[i::]):
-                        if self.is_translocation(breakpoint, other_breakpoint):
-                            translocations.append(
-                                self.translocation_pattern()
-                            )
-                            found = True
-                            breakpoint_not_used[i + j] = False
-                            break
-                    if not found:
-                        leftover_breakpoints.append(breakpoint)
-        return translocations, leftover_breakpoints
-
-    def translocation_pattern(self) -> TranslocationPattern:
-        _, destination_start, destination_end, _ = self.sort_alignment_coords(*self.nonadjacent)
-        _, source_start, source_end, _ = self.sort_alignment_coords(*self.adjacent)
-        destination = Pattern(
-            start=destination_start + 1,
-            end=destination_end - 1,
-            chromosome=self.nonadjacent[0].chromosome
-        )
-
-        source = Pattern(
-            start=source_start,
-            end=source_end,
-            chromosome=self.adjacent[0].chromosome
-        )
-
-        return TranslocationPattern(
-            source=source,
-            destination=destination,
-            support_alignments=[*self.adjacent, *self.nonadjacent]
-        )
-
-    def sort_alignment_coords(self, first: Alignment, second: Alignment) -> Tuple[int, int, int, int]:
-        if first.start < second.start:
-            return first.start, first.end, second.start, second.end
-        else:
-            return second.start, second.end, first.start, first.end
-
-    def is_translocation(self, first: Contig, second: Contig) -> bool:
-        a, b = self.sort_contig(first)
-        c, d = self.sort_contig(second)
-        # We don't know apriori which contig could be on which side of translocation
-        if are_they_adjacent(a, d, margin_of_error=5):
-            self.adjacent = a, d
-            self.nonadjacent = b, c
-            return True
-        elif are_they_adjacent(b, c, margin_of_error=5):
-            self.adjacent = b, c
-            self.nonadjacent = a, d
-            return True
-        else:
-            return False
-
-    def sort_contig(self, contig: Contig) -> Tuple[Alignment, Alignment]:
-        """
-        Sorts a contig preserving both alignment direction*1 (3' to 5') or (5' to 3') and contig order.
-        Example-Legend: (0<-contig space start, 5<-contig space end)<- alignment
-        If a contig is aligned (3' to 5'), returned alignments will appear in regular order.
-        Example: (0, 150) (151 300)
-        If a contig is aligned (5' to 3'), returned alignments will appear in reversed order.
-        Example: (300 151) (150, 0)
-
-        1* Do not confuse with alignment order, which would mean order in which alignments map onto the reference genome
-        """
-        first, second = contig.alignments
-        regular_mapping_direction = first.contig_start < first.contig_end
-        if regular_mapping_direction:
-            in_order = first.contig_start < second.contig_start # as in (0, 150) (151 300)
-        else:
-            in_order = first.contig_end > second.contig_end # as in (300 151) (150, 0)
-
-        return (first, second) if in_order else (second, first)
+        return deletions
