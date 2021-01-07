@@ -28,8 +28,8 @@ def potential_duplication(first: Alignment, second: Alignment) -> Pattern:
     if not first.start < second.start:
         first, second = second, first
     return Pattern(
-        start=first.start+1,
-        end=second.end-1,
+        start=first.start + 1,
+        end=second.end - 1,
         chromosome=first.chromosome,
         supporting_alignments=[first, second]
     )
@@ -39,8 +39,8 @@ def potential_deletion(first: Alignment, second: Alignment) -> Pattern:
     if not first.start < second.start:
         first, second = second, first
     return Pattern(
-        start=first.end+1,
-        end=second.start-1,
+        start=first.end + 1,
+        end=second.start - 1,
         chromosome=first.chromosome,
         supporting_alignments=[first, second]
     )
@@ -94,12 +94,15 @@ def find_contig_patterns(contigs):
     others = []
     for contig in contigs:
         [first, second] = contig.alignments
-
         same_chromosome = first.chromosome == second.chromosome
         same_direction = (get_mapping_direction(first) == get_mapping_direction(second))
-        both_downstream = get_mapping_direction(first)
-        mapped_in_order = (both_downstream and first.contig_start < second.contig_start) \
-                          or (not both_downstream and second.contig_end < first.contig_end)
+
+        if not first.start < second.start and same_chromosome:
+            first, second = second, first
+
+        mapped_in_order = first.contig_start < first.contig_end < second.contig_start < second.contig_end or\
+                          first.contig_start > first.contig_end > second.contig_start > second.contig_end
+
         gap_between = first.end < second.start
         intersecting = first.end > second.start
 
