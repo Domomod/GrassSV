@@ -5,8 +5,8 @@ TEXT = 'find_hdr'
 
 def add_subparser(subparsers):
     hdr = subparsers.add_parser(TEXT, help='finds regions of high depth coverage')
-    hdr.add_argument('input', type=str)
-    hdr.add_argument('output', type=str)
+    hdr.add_argument('input', type=str, help="Depth coverage file")
+    hdr.add_argument('output', type=str, help="High coverage regions")
     hdr.add_argument('-w', '--window', help="Window size (default is 70)", default=70, type=int, required=False)
     hdr.add_argument('-th', '--threshold', help="Threshold size (default is None - auto detect)", default=None,
                      type=int, required=False)
