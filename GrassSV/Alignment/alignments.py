@@ -37,12 +37,13 @@ class SupportConvertableToBed:
 class Alignment(ConvertableToBed):
     def __init__(self, chromosome,
                  alignment_start, alignment_end,
-                 contig_start, contig_end):
+                 contig_start, contig_end, contig_name=''):
         self.chromosome = chromosome
         self.start = alignment_start
         self.end = alignment_end
         self.contig_start = contig_start
         self.contig_end = contig_end
+        self.contig_name = contig_name
 
     def to_bed(self, name: str):
         return " ".join([self.chromosome, str(self.start), str(self.end), name, '\n'])
@@ -111,12 +112,37 @@ class TranslocationPattern(ConvertableToBed, SupportConvertableToBed):
 # Common utilities
 ###################################################################################
 
-def are_they_adjacent(first: Union[Alignment, Pattern], second: Union[Alignment, Pattern], margin_of_error : int = 0):
-    if not first.start < second.start:
+def chromosome_position_sort(records: Iterable[Union[Alignment, Pattern]]):
+    return sorted(records, key=lambda x: (x.chromosome, x.start))
+
+
+def sort_coords(first: Union[Alignment, Pattern], second: Union[Alignment, Pattern]) -> Tuple[int, int, int, int]:
+    return (*sorted([first.start, first.end, second.start, second.end]),)
+
+
+def coords_equal(first, second, margin_of_error=0):
+    return first - margin_of_error + 1 <= second <= first + margin_of_error + 1
+
+
+def same_chromosome(first: Union[Alignment, Pattern], second: Union[Alignment, Pattern]):
+    return first.chromosome == second.chromosome
+
+
+def are_they_identical(first: Union[Alignment, Pattern], second: Union[Alignment, Pattern], margin_of_error: int = 0):
+    if not first.start <= second.start:
+        first, second = second, first
+    same_chromosome = first.chromosome == second.chromosome
+    left_identical = coords_equal(first.start, second.start, margin_of_error)
+    right_identical = coords_equal(first.end, second.end, margin_of_error)
+    return same_chromosome and left_identical and right_identical
+
+
+def are_they_adjacent(first: Union[Alignment, Pattern], second: Union[Alignment, Pattern], margin_of_error: int = 0):
+    if not first.start <= second.start:
         first, second = second, first
 
     same_chromosome = first.chromosome == second.chromosome
-    adjacent = first.end - margin_of_error + 1 <= second.start <= first.end + margin_of_error + 1
+    adjacent = coords_equal(first.end, second.start, margin_of_error)
     return same_chromosome and adjacent
 
 

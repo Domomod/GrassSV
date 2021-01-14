@@ -1,7 +1,7 @@
 from typing import *
 from enum import Enum
 
-from GrassSV.Alignment.alignments import Alignment, Contig, Pattern
+from GrassSV.Alignment.alignments import Alignment, Contig, Pattern, are_they_adjacent
 
 
 def pairwise(it):
@@ -25,25 +25,14 @@ def find_alignment_patterns(alignments):
     for first, second in pairwise(alignments):
         same_chromosome = second.chromosome == first.chromosome
         if same_chromosome:
-            intersecting = second.start < first.end
-            adjacent = first.end + 1 == second.start
-            if adjacent:
-                insertions.append(
-                    Pattern(
+            if are_they_adjacent(first, second, margin_of_error=3):
+                pattern = Pattern(
                         chromosome=first.chromosome,
                         start=first.end,
                         end=second.start,
                         supporting_alignments=[first, second]
-                    ))
-            elif intersecting:
-                duplications.append(
-                    Pattern(
-                        chromosome=first.chromosome,
-                        start=second.start,
-                        end=first.end,
-                        supporting_alignments=[first, second]
                     )
-                )
+                insertions.append(pattern)
             else:
                 others.append(first)
         else:

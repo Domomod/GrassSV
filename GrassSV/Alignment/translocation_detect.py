@@ -2,7 +2,7 @@ import itertools
 from typing import *
 
 from GrassSV.Alignment.alignments import TranslocationPattern, Contig, Alignment, \
-    Pattern, do_they_intersect, are_they_adjacent
+    Pattern, do_they_intersect, are_they_adjacent, sort_coords, are_they_identical, same_chromosome
 
 
 ####################################################################################
@@ -10,24 +10,112 @@ from GrassSV.Alignment.alignments import TranslocationPattern, Contig, Alignment
 ###################################################################################
 
 class TranslocationFilter(object):
-    def __call__(self, deletions: List[Pattern], translocation_breakpoints: List[Contig]):
+    def __call__(self, deletions: List[Pattern], translocation_breakpoints: List[Contig],
+                 duplications: List[Pattern]):
+        same_chromosome_filter = SingleChromosomeTranslocationFilter()
         breakpoint_filter = TranslocationBreakpointFilter()
         deletion_breakpoint_filter = TranslocationDeletionFilter()
         remove_misclasified_deletions = MisclassifiedDeletionFilter()
 
-        translocations1, unused_breakpoints = breakpoint_filter(breakpoints=translocation_breakpoints)
-        translocations2, deletions, unused_breakpoints = deletion_breakpoint_filter(
-            translocation_breakpoints=unused_breakpoints,
-            potential_deletions=deletions)
-        translocations = translocations1 + translocations2
-        deletions = remove_misclasified_deletions(translocations=translocations,
-                                                  deletions_unfiltered=deletions)
-        return translocations, deletions, unused_breakpoints
+        translocations0, deletions, duplications = same_chromosome_filter(deletions, duplications)
+        translocations1, unused_breakpoints = breakpoint_filter(translocation_breakpoints)
+        translocations2, deletions, unused_breakpoints = deletion_breakpoint_filter(unused_breakpoints, deletions)
+        translocations =  translocations0 + translocations1 + translocations2
+        deletions = remove_misclasified_deletions(translocations, deletions)
+        return translocations, deletions, unused_breakpoints, duplications
+
 
 #############################################################################################################
-# Filtering single chromosome translocations based on deletions adjacency
+# Filtering translocations taking place on a single chromosome
 #############################################################################################################
 
+class SingleChromosomeTranslocationFilter(object):
+    """
+    First detects adjacent deletion patterns indicating a single chromosme translocation took place.
+    Second detects a potential duplication pattern caused by the detected translocation and filters it out.
+    Returns detected translocation, unused deletions and unused potential_duplications.
+    """
+
+    def __call__(self, deletions: List[Pattern], potential_duplications_sorted: List[Pattern]):
+        translocations = []
+        helper_patterns = []
+        unused_deletions = []
+        duplications = []
+        deletion_not_used = [True] * len(deletions)
+
+        last_iteration_succesfull = False
+        for i, deletion in enumerate(deletions[:-1]):
+            if deletion_not_used[i]:
+                succes = False
+                for j, other_deletion in enumerate(deletions[i + 1:]):
+                    if are_they_adjacent(deletion, other_deletion, margin_of_error=10):
+                        helper_patterns.append(
+                            self.helper_pattern(deletion, other_deletion)
+                        )
+                        translocations.append(
+                            self.translocation_pattern(deletion, other_deletion)
+                        )
+                        deletion_not_used[i + j + 1] = False
+                        succes = True
+                        break
+
+                if not succes:
+                    unused_deletions.append(deletion)
+
+        if last_iteration_succesfull == False:
+            unused_deletions.append(deletions[-1])
+
+        for potential_duplication in potential_duplications_sorted:
+            used = False
+            for translocation in helper_patterns:
+                if are_they_identical(translocation, potential_duplication, margin_of_error=3):
+                    used = True
+                    translocation.supporting_alignments.append(potential_duplication)
+            if not used:
+                duplications.append(potential_duplication)
+        return translocations, unused_deletions, duplications
+
+    def helper_pattern(self, deletion: Pattern, other_deletion: Pattern) -> Pattern:
+        """
+        Creates a helper pattern. Used to filter out potential_duplication pattern's caused by translocations.
+        """
+        start, _, _, end = sort_coords(deletion, other_deletion)
+        return Pattern(
+            start=start,
+            end=end,
+            chromosome=deletion.chromosome
+        )
+
+    def translocation_pattern(self, deletion: Pattern, other_deletion: Pattern) -> TranslocationPattern:
+        first, second, third, fourth = sort_coords(deletion, other_deletion)
+        if second - first < fourth - third:
+            return TranslocationPattern(
+                source=Pattern(
+                    start=first,
+                    end=second,
+                    chromosome=deletion.chromosome
+                ),
+                destination=Pattern(
+                    start=fourth,
+                    end=fourth + 1,
+                    chromosome=deletion.chromosome
+                ),
+                support_alignments=[*deletion.supporting_alignments, *other_deletion.supporting_alignments]
+            )
+        else:
+            return TranslocationPattern(
+                source=Pattern(
+                    start=third,
+                    end=fourth,
+                    chromosome=deletion.chromosome
+                ),
+                destination=Pattern(
+                    start=first - 1,
+                    end=first,
+                    chromosome=deletion.chromosome
+                ),
+                support_alignments=[*deletion.supporting_alignments, *other_deletion.supporting_alignments]
+            )
 
 
 #############################################################################################################
@@ -50,11 +138,10 @@ class TranslocationBreakpointFilter(object):
         for i, breakpoint in enumerate(breakpoints):
             if breakpoint_not_used[i]:
                 found = False
-                for j, other_breakpoint in enumerate(breakpoints[i::]):
+                for j, other_breakpoint in enumerate(breakpoints[i + 1:]):
                     if self.is_translocation(breakpoint, other_breakpoint):
-                        translocations.append(
-                            self.translocation_pattern()
-                        )
+                        translocation = self.translocation_pattern()
+                        translocations.append(translocation)
                         found = True
                         breakpoint_not_used[i + j] = False
                         break
@@ -63,8 +150,8 @@ class TranslocationBreakpointFilter(object):
         return translocations, leftover_breakpoints
 
     def translocation_pattern(self) -> TranslocationPattern:
-        destination_start, _, _, destination_end = self.sort_alignment_coords(*self.nonadjacent)
-        _, source_start, source_end, _ = self.sort_alignment_coords(*self.adjacent)
+        destination_start, _, _, destination_end = sort_coords(*self.nonadjacent)
+        _, source_start, source_end, _ = sort_coords(*self.adjacent)
         destination = Pattern(
             start=destination_start + 1,
             end=destination_end - 1,
@@ -83,21 +170,15 @@ class TranslocationBreakpointFilter(object):
             support_alignments=[*self.adjacent, *self.nonadjacent]
         )
 
-    def sort_alignment_coords(self, first: Alignment, second: Alignment) -> Tuple[int, int, int, int]:
-        if first.start < second.start:
-            return first.start, first.end, second.start, second.end
-        else:
-            return second.start, second.end, first.start, first.end
-
     def is_translocation(self, first: Contig, second: Contig) -> bool:
         a, b = self.sort_contig(first)
         c, d = self.sort_contig(second)
         # We don't know apriori which contig could be on which side of translocation
-        if are_they_adjacent(a, d, margin_of_error=5):
+        if are_they_adjacent(a, d, margin_of_error=5) and same_chromosome(b,c):
             self.adjacent = a, d
             self.nonadjacent = b, c
             return True
-        elif are_they_adjacent(b, c, margin_of_error=5):
+        elif are_they_adjacent(b, c, margin_of_error=5) and same_chromosome(a,d):
             self.adjacent = b, c
             self.nonadjacent = a, d
             return True

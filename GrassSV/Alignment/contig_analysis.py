@@ -1,6 +1,6 @@
 from typing import *
 
-from GrassSV.Alignment.alignments import Alignment, Contig, Pattern
+from GrassSV.Alignment.alignments import Alignment, Pattern, chromosome_position_sort
 
 downstream = 1
 upstream = 0
@@ -124,11 +124,11 @@ def find_contig_patterns(contigs):
             insertions.append(contig)
 
     return ContigPatternsData(
-        insertions=insertions,
-        inversions=inversions,
-        deletions=deletions,
-        duplication_breakpoints=duplication_breakpoints,
-        translocation_breakpoints=translocation_breakpoints,
-        potential_duplications=potential_duplications,
-        others=others
+        insertions=chromosome_position_sort(insertions),
+        inversions=chromosome_position_sort(inversions),
+        deletions=chromosome_position_sort(deletions),
+        duplication_breakpoints=chromosome_position_sort(duplication_breakpoints),
+        translocation_breakpoints=translocation_breakpoints, #There is no trivial/useful way to sort translocations
+        potential_duplications=chromosome_position_sort(potential_duplications),
+        others=chromosome_position_sort(others)
     )

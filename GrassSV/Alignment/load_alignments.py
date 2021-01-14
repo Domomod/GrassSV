@@ -22,7 +22,8 @@ def load_alignments(path):
                     alignment_start = int(line[0]),
                     alignment_end = int(line[1]),
                     contig_start = int(line[2]),
-                    contig_end = int(line[3])
+                    contig_end = int(line[3]),
+                    contig_name= line[5]
                 )
 
             if(contig != line[5]):
