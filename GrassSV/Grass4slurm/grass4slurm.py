@@ -105,24 +105,26 @@ class Grass4slurm:
     depend=-1
     @staticmethod
     def submit_jobs():
+        def submit_job(job):
+            cmd = 'sbatch' \
+                  + ' --depend=afterok:{} --kill-on-invalid-dep=yes'.format(
+                Grass4slurm.depend) if Grass4slurm.depend != -1 else '' \
+                                                                     + ' --mail-type=END,FAIL --mail-user={}'.format(
+                Grass4slurm.mail) if Grass4slurm.mail is not None else ''
+            output = subprocess.getoutput(cmd)
+            print(output)
+            Grass4slurm.depend = output.split(' ')[-1].strip()
+
+        if Grass4slurm.calculate_depth == True:
+            submit_job(' GrassSV/Grass4slurm/calculate_depth.sh .')
+            print('    Submited depth calculation job')
+
         for coverage in Grass4slurm.coverage:
             for margin in Grass4slurm.margin:
                 reads = Grass4slurm.reads
                 coverage_folder = "coverage_{}_{}".format(coverage, margin)
                 Grass4slurm.depend = -1
                 print("[*]Submiting jobs for coverage {} and margin {}".format(coverage, margin))
-
-                def submit_job(job):
-                    cmd = 'sbatch' \
-                          + ' --depend=afterok:{} --kill-on-invalid-dep=yes'.format(Grass4slurm.depend) if Grass4slurm.depend != -1 else '' \
-                          + ' --mail-type=END,FAIL --mail-user={}'.format(Grass4slurm.mail) if Grass4slurm.mail is not None else ''
-                    output = subprocess.getoutput(cmd)
-                    print(output)
-                    Grass4slurm.depend = output.split(' ')[-1].strip()
-
-                if Grass4slurm.calculate_depth == True:
-                    submit_job(' GrassSV/Grass4slurm/calculate_depth.sh .')
-                    print('    Submited depth calculation job')
 
                 if Grass4slurm.extract_reads == True:
                     submit_job(' GrassSV/Grass4slurm/extract_reads.sh . {} {}'.format(coverage, margin))
