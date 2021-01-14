@@ -45,18 +45,21 @@ class Grass4slurm:
                             help="Enable extract_reads step as part of your pipeline")
         parser.add_argument('--detect', action='store_true',
                             help="Enable extract_reads step as part of your pipeline")
+        parser.add_argument('--all', action='store_true',
+                            help="Enable all steps in your pipeline")
 
         args = parser.parse_args()
+        all_steps = args.all
 
         Grass4slurm.mail            = args.mail
         Grass4slurm.coverage        = args.coverage if isinstance(args.coverage, list) else [args.coverage]
         Grass4slurm.margin          = args.margin if isinstance(args.margin, list) else [args.margin]
         Grass4slurm.reads           = args.reads
-        Grass4slurm.calculate_depth = args.calculate_depth
-        Grass4slurm.extract_reads   = args.extract_reads
-        Grass4slurm.assemble        = args.assemble
-        Grass4slurm.map_contigs     = args.map_contigs
-        Grass4slurm.detect          = args.detect
+        Grass4slurm.calculate_depth = args.calculate_depth or all_steps
+        Grass4slurm.extract_reads   = args.extract_reads or all_steps
+        Grass4slurm.assemble        = args.assemble or all_steps
+        Grass4slurm.map_contigs     = args.map_contigs or all_steps
+        Grass4slurm.detect          = args.detect or all_steps
 
     @staticmethod
     def check_pipeline_logic():
