@@ -1,6 +1,6 @@
 from typing import *
 
-from GrassSV.Alignment.alignments import Alignment, Pattern, chromosome_position_sort
+from GrassSV.Alignment.alignments import Alignment, Pattern, chromosome_position_sort, are_they_adjacent, Insertion
 
 downstream = 1
 upstream = 0
@@ -60,7 +60,8 @@ def duplication_breakpoint(first: Alignment, second: Alignment) -> Pattern:
 def insertion(first: Alignment, second: Alignment) -> Pattern:
     if not first.start < second.start:
         first, second = second, first
-    return Pattern(
+    return Insertion(
+        size=abs(first.contig_end - second.contig_start) - (second.start-first.end),
         start=first.end,
         end=second.start,
         chromosome=first.chromosome,
@@ -103,6 +104,9 @@ def find_contig_patterns(contigs):
         mapped_in_order = first.contig_start < first.contig_end < second.contig_start < second.contig_end or\
                           first.contig_start > first.contig_end > second.contig_start > second.contig_end
 
+        contig_gap = abs(first.contig_end - second.contig_start)
+        gap = abs(second.start - first.end)
+
         gap_between = first.end < second.start
         intersecting = first.end > second.start
 
@@ -114,6 +118,8 @@ def find_contig_patterns(contigs):
         elif not mapped_in_order:
             potential_duplications.append(
                 potential_duplication(first, second))
+        elif contig_gap > gap:
+            insertions.append(insertion(first, second))
         elif gap_between:
             deletion = potential_deletion(first, second)
             deletions.append(deletion)
@@ -121,7 +127,7 @@ def find_contig_patterns(contigs):
             duplication_breakpoints.append(
                 duplication_breakpoint(first, second))
         else:
-            insertions.append(contig)
+            others.append(contig)
 
     return ContigPatternsData(
         insertions=chromosome_position_sort(insertions),

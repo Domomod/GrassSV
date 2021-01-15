@@ -16,7 +16,10 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
     alignment_patterns = find_alignment_patterns(alignments)
     contig_patterns = find_contig_patterns(simple_contigs)
 
-    insertions = alignment_patterns["insertions"]
+    alignment_insertions = alignment_patterns["insertions"]
+    contig_insertions = contig_patterns.insertions
+    insertions = contig_insertions + alignment_insertions
+
     inversions_filtered = filter_inversions(contig_patterns.inversions)
 
     translocations, deletions, unused_breakpoints, duplications \
@@ -37,6 +40,8 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
                    name='')
 
     export_records(insertions, f"{output_folder_path}/insertions.bed")
+    export_records(alignment_insertions, f"{output_folder_path}/alignment_insertions.bed")
+    export_records(contig_insertions, f"{output_folder_path}/contig_insertions.bed")
     export_records(deletions, f"{output_folder_path}/deletions.bed")
     export_records(translocations, f"{output_folder_path}/translocations.bed")
     export_supporting_alignments(translocations, f"{output_folder_path}/translocations_support.bed")

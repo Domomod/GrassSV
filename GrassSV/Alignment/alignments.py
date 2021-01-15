@@ -41,6 +41,7 @@ class Alignment(ConvertableToBed):
         self.chromosome = chromosome
         self.start = alignment_start
         self.end = alignment_end
+        self.size = self.end - self.start
         self.contig_start = contig_start
         self.contig_end = contig_end
         self.contig_name = contig_name
@@ -83,6 +84,14 @@ class Pattern(ConvertableToBed, SupportConvertableToBed):
         return ''.join(
             [alignment.to_bed(f"{name}-{self.uid}-{i}") for i, alignment in enumerate(self.supporting_alignments)])
 
+####################################################################################
+# Unique data type required for describing translocation pattern
+###################################################################################
+
+class Insertion(Pattern):
+    def __init__(self, size: int, chromosome: int, start: int, end: int, supporting_alignments: List[Alignment] = []):
+        super().__init__(chromosome, start, end, supporting_alignments)
+        self.insertion_size = size
 
 ####################################################################################
 # Unique data type required for describing translocation pattern
