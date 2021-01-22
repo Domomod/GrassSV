@@ -38,13 +38,13 @@ class Alignment(ConvertableToBed):
     def __init__(self, chromosome,
                  alignment_start, alignment_end,
                  contig_start, contig_end, contig_name=''):
-        self.chromosome = chromosome
-        self.start = alignment_start
-        self.end = alignment_end
-        self.size = self.end - self.start
-        self.contig_start = contig_start
-        self.contig_end = contig_end
-        self.contig_name = contig_name
+        self.chromosome: str = chromosome
+        self.start: int = alignment_start
+        self.end: int = alignment_end
+        self.size: int = self.end - self.start + 1
+        self.contig_start: int = contig_start
+        self.contig_end: int = contig_end
+        self.contig_name: str = contig_name
 
     def to_bed(self, name: str):
         return " ".join([self.chromosome, str(self.start), str(self.end), name, '\n'])
@@ -66,12 +66,12 @@ class Contig(ConvertableToBed):
 class Pattern(ConvertableToBed, SupportConvertableToBed):
     _gen_uid = SeqUidCounter()
 
-    def __init__(self, chromosome: int, start: int, end: int, supporting_alignments: List[Alignment] = []):
-        self.uid = next(Pattern._gen_uid)
-        self.chromosome = chromosome
-        self.start = start
-        self.end = end
-        self.size = end - start
+    def __init__(self, chromosome: str, start: int, end: int, supporting_alignments: List[Alignment] = []):
+        self.uid: int = next(Pattern._gen_uid)
+        self.chromosome: str = chromosome
+        self.start: int = start
+        self.end: int = end
+        self.size: int = end - start + 1
         self.supporting_alignments = supporting_alignments
 
     def __eq__(self, other):
@@ -84,14 +84,16 @@ class Pattern(ConvertableToBed, SupportConvertableToBed):
         return ''.join(
             [alignment.to_bed(f"{name}-{self.uid}-{i}") for i, alignment in enumerate(self.supporting_alignments)])
 
+
 ####################################################################################
-# Unique data type required for describing translocation pattern
+# Unique data type required for describing insertions pattern
 ###################################################################################
 
 class Insertion(Pattern):
     def __init__(self, size: int, chromosome: int, start: int, end: int, supporting_alignments: List[Alignment] = []):
         super().__init__(chromosome, start, end, supporting_alignments)
         self.insertion_size = size
+
 
 ####################################################################################
 # Unique data type required for describing translocation pattern

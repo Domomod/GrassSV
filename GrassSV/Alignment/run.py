@@ -29,6 +29,17 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
     # find_duplications(contig_patterns.potential_duplications, alignment_patterns['others'])
 
+
+    #Raport
+
+    export_records(insertions, f"{output_folder_path}/detectedSVs/insertion.bed")
+    export_records(filter_inversions, f"{output_folder_path}/detectedSVs/filter_inversions.bed")
+    export_records(deletions, f"{output_folder_path}/detectedSVs/insertion.bed")
+    export_records(duplications, f"{output_folder_path}/detectedSVs/deletions.bed")
+    export_records(translocations, f"{output_folder_path}/detectedSVs/translocations.bed")
+
+    #For debug
+
     export_records(alignments, f"single_alignments.bed")
     export_records(simple_contigs, f"simple_contigs.bed")
     export_records(complex_conigs, f"complex_contigs.bed")
@@ -38,7 +49,6 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
     export_supporting_alignments(contig_patterns.deletions, f"{output_folder_path}/deletion_pattern_support.bed")
     export_records(contig_patterns.translocation_breakpoints, f"{output_folder_path}/translocation_breakpoints.bed",
                    name='')
-
     export_records(insertions, f"{output_folder_path}/insertions.bed")
     export_records(alignment_insertions, f"{output_folder_path}/alignment_insertions.bed")
     export_records(contig_insertions, f"{output_folder_path}/contig_insertions.bed")

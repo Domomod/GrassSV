@@ -14,12 +14,27 @@ def get_mapping_direction(alignment):
 
 
 def inversion(first: Alignment, second: Alignment) -> Pattern:
-    if not first.start < second.start:
-        first, second = second, first
+    def deduce_inversion_berakpoints(first: Alignment, second: Alignment) -> Tuple[int, int]:
+        contigCords = [first.contig_start, first.contig_end, second.contig_start, second.contig_end]
+        alignmentCords = [first.start, first.end, second.start, second.end]
+
+        (a_contig, a), (b_contig, b), (c_contig, c), (d_contig, d) = sorted( #Detects coordinates that were adjacent in contig
+            [(contig, alignment) for contig, alignment in zip(contigCords, alignmentCords)])
+        if b > c: # Inversions that were read from 5' to 3' schould be sorted decreasingly
+            a, b, c, d = d, c ,b ,a
+
+
+        if a < b: #Section from a to b is outside of inversion
+            return b+1, c
+        elif c < d: #Section from c to d is outside of inversion
+            return b, c-1
+
+    start, end = deduce_inversion_berakpoints(first, second)
+
     return Pattern(
         chromosome=first.chromosome,
-        start=first.start,
-        end=second.end,
+        start=start,
+        end=end,
         supporting_alignments=[first, second]
     )
 
@@ -61,7 +76,7 @@ def insertion(first: Alignment, second: Alignment) -> Pattern:
     if not first.start < second.start:
         first, second = second, first
     return Insertion(
-        size=abs(first.contig_end - second.contig_start) - (second.start-first.end),
+        size=abs(first.contig_end - second.contig_start) - (second.start - first.end),
         start=first.end,
         end=second.start,
         chromosome=first.chromosome,
@@ -101,7 +116,7 @@ def find_contig_patterns(contigs):
         if not first.start < second.start and same_chromosome:
             first, second = second, first
 
-        mapped_in_order = first.contig_start < first.contig_end < second.contig_start < second.contig_end or\
+        mapped_in_order = first.contig_start < first.contig_end < second.contig_start < second.contig_end or \
                           first.contig_start > first.contig_end > second.contig_start > second.contig_end
 
         contig_gap = abs(first.contig_end - second.contig_start)
@@ -134,7 +149,7 @@ def find_contig_patterns(contigs):
         inversions=chromosome_position_sort(inversions),
         deletions=chromosome_position_sort(deletions),
         duplication_breakpoints=chromosome_position_sort(duplication_breakpoints),
-        translocation_breakpoints=translocation_breakpoints, #There is no trivial/useful way to sort translocations
+        translocation_breakpoints=translocation_breakpoints,  # There is no trivial/useful way to sort translocations
         potential_duplications=chromosome_position_sort(potential_duplications),
         others=chromosome_position_sort(others)
     )
