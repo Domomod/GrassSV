@@ -128,7 +128,7 @@ class SingleChromosomeTranslocationFilter(object):
         for potential_duplication in duplications:
             used = False
             for translocation in self.helper_patterns:
-                if are_they_identical(translocation, potential_duplication, margin_of_error=3):
+                if are_they_identical(translocation, potential_duplication, margin_of_error=10):
                     used = True
                     translocation.supporting_alignments.append(potential_duplication)
             if not used:
@@ -240,8 +240,8 @@ class TranslocationBreakpointFilter(object):
         return translocations, leftover_breakpoints
 
     def translocation_pattern(self) -> TranslocationPattern:
-        destination_start, _, _, destination_end = sort_coords(*self.nonadjacent)
-        _, source_start, source_end, _ = sort_coords(*self.adjacent)
+        destination_start, _, _, destination_end = sort_coords(*self.adjacent)
+        _, source_start, source_end, _ = sort_coords(*self.nonadjacent)
         destination = Pattern(
             start=destination_start + 1,
             end=destination_end - 1,
@@ -264,11 +264,11 @@ class TranslocationBreakpointFilter(object):
         a, b = self.sort_contig(first)
         c, d = self.sort_contig(second)
         # We don't know apriori which contig could be on which side of translocation
-        if are_they_adjacent(a, d, margin_of_error=5) and same_chromosome(b, c):
+        if are_they_adjacent(a, d, margin_of_error=10) and same_chromosome(b, c):
             self.adjacent = a, d
             self.nonadjacent = b, c
             return True
-        elif are_they_adjacent(b, c, margin_of_error=5) and same_chromosome(a, d):
+        elif are_they_adjacent(b, c, margin_of_error=10) and same_chromosome(a, d):
             self.adjacent = b, c
             self.nonadjacent = a, d
             return True

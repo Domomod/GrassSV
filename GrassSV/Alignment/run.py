@@ -34,8 +34,8 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
     export_records(insertions, f"{output_folder_path}/detectedSVs/insertion.bed")
     export_records(inversions_filtered, f"{output_folder_path}/detectedSVs/filter_inversions.bed")
-    export_records(deletions, f"{output_folder_path}/detectedSVs/insertion.bed")
-    export_records(duplications, f"{output_folder_path}/detectedSVs/deletions.bed")
+    export_records(deletions, f"{output_folder_path}/detectedSVs/deletions.bed")
+    export_records(duplications, f"{output_folder_path}/detectedSVs/duplications.bed")
     export_records(translocations, f"{output_folder_path}/detectedSVs/translocations.bed")
 
     #For debug

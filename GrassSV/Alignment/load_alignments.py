@@ -34,9 +34,10 @@ def load_alignments(path):
                         Contig(contig, alignments)
                     )
                 elif len(alignments) > 2:
-                    many_alignments_contigs.append(
-                        Contig(contig, alignments)
-                    )
+                    for first, second in zip(alignments[:-1], alignments[1:]):
+                        two_alignments_contigs.append(
+                            Contig(contig, [first, second])
+                        )
                 alignments = []
 
             alignments.append(alignment)

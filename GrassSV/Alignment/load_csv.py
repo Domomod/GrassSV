@@ -49,8 +49,8 @@ def load_translocation(path):
 
         chromosome = row['ChrB'].split(' ', 1)[0]
         chromosome = correct_ref_name(chromosome)
-        start = row['StartB']
-        end = row['EndB']
+        start = row['StartB']-1
+        end = row['StartB']
 
         second = Pattern(
             chromosome=chromosome,

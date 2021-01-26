@@ -19,7 +19,7 @@ def write_regular_mutations(data, file, file_name):
             chromosome, str(start), str(end), file_name
         ])+ "\n")
 
-def write_translocations(data, file, file_name):
+def write_translocations(data, file):
     for idx, row in data.iterrows():
         chromosome = row['ChrA'].split(' ', 1)[0]
         chromosome = correct_ref_name(chromosome)
@@ -27,7 +27,7 @@ def write_translocations(data, file, file_name):
         end = row['EndA']
 
         file.write(" ".join([
-            chromosome, str(start), str(end), file_name
+            chromosome, str(start), str(end), "translocation-from"
         ]) + "\n")
 
         chromosome = row['ChrB'].split(' ', 1)[0]
@@ -36,7 +36,7 @@ def write_translocations(data, file, file_name):
         end = row['EndB']
 
         file.write(" ".join([
-            chromosome, str(start), str(end), file_name
+            chromosome, str(start), str(end), "translocation-to"
         ]) + "\n")
 
 def run(csv_paths, bed_path):
