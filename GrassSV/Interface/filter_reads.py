@@ -7,21 +7,28 @@ TEXT = 'filter_reads'
 
 def action(args):
     depth = read_depth_file(args.depth)
+    fastq1 = []
+    fastq2 = []
+
+    first = None
+    for sam in read_sam_file(args.sam):
+        if not first:
+            first = sam
+            continue
+        second = sam
+        for currDepth in depth:
+            if are_in_region_or_not_mapped(first, second, currDepth):
+                fastq1.append(str(FastqInstance(first.qname, first.seq, first.qual, 1)))
+                fastq2.append(str(FastqInstance(second.qname, second.seq, second.qual, 2)))
+                break
+        first = sam
 
     with open(args.fastq1, 'w') as fastq1_file:
-        with open(args.fastq2, 'w') as fastq2_file:
-            first = None
-            for sam in read_sam_file(args.sam):
-                if not first:
-                    first = sam
-                    continue
-                second = sam
-                for currDepth in depth:
-                    if are_in_region_or_not_mapped(first, second, currDepth):
-                        fastq1_file.write(str(FastqInstance(first.qname, first.seq, first.qual, 1)))
-                        fastq2_file.write(str(FastqInstance(second.qname, second.seq, second.qual, 2)))
-                        break
-                first = sam
+        for f1 in fastq1:
+            fastq1_file.write(f1)
+    with open(args.fastq2, 'w') as fastq2_file:
+        for f2 in fastq2:
+            fastq2_file.write(f2)
 
 
 def read_depth_file(in_depth: str):
@@ -41,7 +48,8 @@ def read_sam_file(sam_file_name: str):
 def are_in_region_or_not_mapped(first, second, depth) -> bool:
     same_chromosome = first.rname == depth.name == second.rname
     are_paired = (first.tlen == -second.tlen)
-    at_least_one_covered = (depth.start - len(first.seq) <= first.pos <= depth.end) or (depth.start - len(second.seq) <= second.pos <= depth.end)
+    at_least_one_covered = (depth.start - len(first.seq) <= first.pos <= depth.end) or (
+                depth.start - len(second.seq) <= second.pos <= depth.end)
     at_least_one_unmapped = first.flag & 12 > 1
     return are_paired and ((same_chromosome and at_least_one_covered) or at_least_one_unmapped)
 
