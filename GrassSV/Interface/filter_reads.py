@@ -30,12 +30,10 @@ def read_depth_file(in_depth: str):
 
 
 def read_sam_file(sam_file_name: str):
-    sam_instances = []
     for line in open(sam_file_name):
         if line[0] == "@":
             continue
-        sam_instances.append(SamInstance(line.split()))
-    return sam_instances
+        yield SamInstance(line.split())
 
 
 def are_in_region_or_not_mapped(first, second, depth) -> bool:
