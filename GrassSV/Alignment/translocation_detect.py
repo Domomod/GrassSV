@@ -233,15 +233,16 @@ class TranslocationBreakpointFilter(object):
                         translocation = self.translocation_pattern()
                         translocations.append(translocation)
                         found = True
-                        breakpoint_not_used[i + j] = False
+                        breakpoint_not_used[i] = False
+                        breakpoint_not_used[i + j + 1] = False
                         break
                 if not found:
                     leftover_breakpoints.append(breakpoint)
         return translocations, leftover_breakpoints
 
     def translocation_pattern(self) -> TranslocationPattern:
-        destination_start, _, _, destination_end = sort_coords(*self.adjacent)
-        _, source_start, source_end, _ = sort_coords(*self.nonadjacent)
+        destination_start, _, _, destination_end = sort_coords(*self.nonadjacent)
+        _, source_start, source_end, _ = sort_coords(*self.adjacent)
         destination = Pattern(
             start=destination_start + 1,
             end=destination_end - 1,
@@ -255,8 +256,8 @@ class TranslocationBreakpointFilter(object):
         )
 
         return TranslocationPattern(
-            source=source,
-            destination=destination,
+            source=destination,
+            destination=source,
             support_alignments=[*self.adjacent, *self.nonadjacent]
         )
 

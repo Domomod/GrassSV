@@ -168,14 +168,24 @@ def do_they_intersect(first: Union[Alignment, Pattern], second: Union[Alignment,
 
 
 def export_records(alignments: Union[List[ConvertableToBed]], output_path, name='record'):
-    with open(output_path, "w") as f:
+    import os
+    directory = os.path.dirname(output_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    with open(output_path, "w+") as f:
         for alignment in alignments:
             line = alignment.to_bed(name)
             f.write(line)
 
 
 def export_supporting_alignments(patterns: List[SupportConvertableToBed], output_path, name='record'):
-    with open(output_path, "w") as f:
+    import os
+    directory = os.path.dirname(output_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    with open(output_path, "w+") as f:
         for i, pattern in enumerate(patterns):
             out = pattern.support_to_bed(name=name)
             f.write(out)

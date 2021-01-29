@@ -31,32 +31,24 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
 
     #Raport
-
     export_records(insertions, f"{output_folder_path}/detectedSVs/insertion.bed")
     export_records(inversions_filtered, f"{output_folder_path}/detectedSVs/filter_inversions.bed")
     export_records(deletions, f"{output_folder_path}/detectedSVs/deletions.bed")
-    export_records(duplications, f"{output_folder_path}/detectedSVs/duplications.bed")
+    #export_records(duplications, f"{output_folder_path}/detectedSVs/duplications.bed")
     export_records(translocations, f"{output_folder_path}/detectedSVs/translocations.bed")
 
     #For debug
+    if export_support:
+        export_supporting_alignments(insertions, f"{output_folder_path}/supportForSVs/insertions_support.bed")
+        export_supporting_alignments(inversions_filtered, f"{output_folder_path}/supportForSVs/inversions_support.bed")
+        export_supporting_alignments(deletions, f"{output_folder_path}/supportForSVs/deletions_support.bed")
+        #export_supporting_alignments(duplications, f"{output_folder_path}/supportForSVs/duplications_support.bed")
+        export_supporting_alignments(translocations, f"{output_folder_path}/supportForSVs/translocations_support.bed")
 
-    export_records(alignments, f"single_alignments.bed")
-    export_records(simple_contigs, f"simple_contigs.bed")
-    export_records(complex_conigs, f"complex_contigs.bed")
-
-    export_records(contig_patterns.potential_duplications, f"{output_folder_path}/potential_duplications_pattern.bed")
-    export_records(contig_patterns.deletions, f"{output_folder_path}/deletion_patterns.bed")
-    export_supporting_alignments(contig_patterns.deletions, f"{output_folder_path}/deletion_pattern_support.bed")
-    export_records(contig_patterns.translocation_breakpoints, f"{output_folder_path}/translocation_breakpoints.bed",
-                   name='')
-    export_records(insertions, f"{output_folder_path}/insertions.bed")
-    export_records(alignment_insertions, f"{output_folder_path}/alignment_insertions.bed")
-    export_records(contig_insertions, f"{output_folder_path}/contig_insertions.bed")
-    export_records(deletions, f"{output_folder_path}/deletions.bed")
-    export_records(translocations, f"{output_folder_path}/translocations.bed")
-    export_supporting_alignments(translocations, f"{output_folder_path}/translocations_support.bed")
-    export_records(inversions_filtered, f"{output_folder_path}/inversions.bed")
-    export_records(duplications, f"{output_folder_path}/tandem_duplications.bed")
-
-    export_records(unused_breakpoints, f"{output_folder_path}/unused_translocation_breakpoints.bed", name='')
-    pass
+    if export_patterns:
+        export_records(contig_patterns.potential_duplications, f"{output_folder_path}/patterns/duplication_patterns.bed")
+        export_records(contig_patterns.deletions, f"{output_folder_path}/patterns/deletion_patterns.bed")
+        export_records(contig_patterns.inversions, f"{output_folder_path}/patterns/inversion_patterns.bed")
+        export_records(contig_patterns.translocation_breakpoints, f"{output_folder_path}/patterns/translocation_breakpoint_patterns.bed")
+        export_records(contig_patterns.insertions, f"{output_folder_path}/patterns/contig_insertion_patterns.bed")
+        export_records(alignment_patterns["insertions"], f"{output_folder_path}/patterns/alignment_insertions_patterns.bed")
