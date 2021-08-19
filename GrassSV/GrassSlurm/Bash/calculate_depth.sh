@@ -2,13 +2,13 @@
 
 #SBATCH -n16
 #SBATCH -N1
-#SBATCH -p plgrid-long
+#SBATCH -p standard
 #SBATCH -J glebokosc_pokrycia
 #SBATCH -o log/depth-slurm.out
 #SBATCH -e log/depth-slurm.err
 
-module load plgrid/apps/samtools/1.6.0
-module load plgrid/apps/bowtie2/2.2.3
+module load samtools/1.6.0
+module load bowtie2/2.2.3
 
 main_directory=$1/../..
 mutation_dir=$1

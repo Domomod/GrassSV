@@ -7,14 +7,16 @@
 
 quast=/home/plgrid-groups/plggillumina/plgDominikKrzysztofJulia/tools/quast-5.0.2
 
-
-grasshopper_dir=$1
+contigs_path=$1
+grasshopper_dir=$(dirname $1)
 genome_dir=$grasshopper_dir/../../../../genome
 quast_name=$2
 quast_dir=$grasshopper_dir/$quast_name
-mkdir $quast_dir
+mkdir -p $quast_dir
+
+
 
 printf "[+] Quast ("$quast_dir"):\t"
 #poprzednio -m 200 -i 65
-$quast/quast.py $grasshopper_dir/contigs.fasta -r $genome_dir/ref.fsa -m 250 -o $quast_dir
+$quast/quast.py $contigs_path -r $genome_dir/ref.fsa -m 250 -o $quast_dir
 printf "Done\n"

@@ -1,24 +1,11 @@
-import subprocess
-
-TEXT = 'pipeline_runner'
-
-MUTATION = ''  # TODO: path to script
-ART = ''
-INDEX = ''
-BOWTIE = ''
-SORT = ''
-DEPTH = ''
-CON_DEPTH = ''
-FASTQ = ''
-GRASSHOPPER = ''
-QUAST = ''
-
+from
+TEXT = 'slurm_dispatch'
 
 def add_subparser(subparsers):
-    pipeline_runner = subparsers.add_parser(TEXT, help='')
-    pipeline_runner.add_argument('-o', '--output', type=str, metavar='path', help='output folder', required=True)
+    slurm_dispatch = subparsers.add_parser(TEXT, help='')
+    slurm_dispatch.add_argument('-o', '--output', type=str, metavar='path', help='output folder', required=True)
     # pipeline_runner.add_argument()    # TODO: input
-    pipeline_runner.add_argument('-d', '--depth', type=str, help='Depth coverage', required=False)
+    slurm_dispatch.add_argument('-d', '--depth', type=str, help='Depth coverage', required=False)
 
 
 def action(args):

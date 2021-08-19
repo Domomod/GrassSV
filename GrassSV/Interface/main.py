@@ -1,5 +1,5 @@
 import argparse
-from GrassSV.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, filter_reads, pipeline_runner, find_hdr
+from GrassSV.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, filter_reads, slurm_dispatch, find_hdr
 
 
 def run():
@@ -13,7 +13,7 @@ def run():
     roi_statistics.add_subparser(subparsers)
     quast2bed.add_subparser(subparsers)
     filter_reads.add_subparser(subparsers)
-    pipeline_runner.add_subparser(subparsers)
+    slurm_dispatch.add_subparser(subparsers)
     find_hdr.add_subparser(subparsers)
 
     args = parser.parse_args()
@@ -30,7 +30,7 @@ def run():
         quast2bed.action(args)
     elif args.action == filter_reads.TEXT:
         filter_reads.action(args)
-    elif args.action == pipeline_runner.TEXT:
-        pipeline_runner.action(args)
+    elif args.action == slurm_dispatch.TEXT:
+        slurm_dispatch.action(args)
     elif args.action == find_hdr.TEXT:
         find_hdr.action(args)

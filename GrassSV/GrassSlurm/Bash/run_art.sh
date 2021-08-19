@@ -3,6 +3,8 @@
 #SBATCH -J ART
 #SBATCH -e log/ART-slurm.err
 #SBATCH -o log/ART-slurm.out
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=domionato@gmail.com
 
 data=$1
 
