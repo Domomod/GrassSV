@@ -1,4 +1,4 @@
-from
+from GrassSV.GrassSlurm import slurm_scheduler
 TEXT = 'slurm_dispatch'
 
 def add_subparser(subparsers):
