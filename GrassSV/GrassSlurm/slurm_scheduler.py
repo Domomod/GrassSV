@@ -96,11 +96,11 @@ class Dependency_Info():
 class Task:
     def __init__(self, Task_UID : Task_UID, dependency : Task_UID = Task_UID.NONE) -> None:
         self.Task_UID = Task_UID
-        self.name, self.error_file, self.log_file, self.cmd = Task_Info.GetTaskInfo(Task_UID.GEN_MUTATION )
+        _, self.name, self.error_file, self.log_file, self.cmd = Task_Info.GetTaskInfo(Task_UID.GEN_MUTATION )
         Dependency_Info.SetDependencyForUID(Task_UID, dependency)
 
     def __iter__(self):
-        return Task_Info.GetTaskInfo(Task_UID.GEN_MUTATION )
+        return Task_Info.GetTaskInfo(self.Task_UID )
 
 class PredefinedTasks(Enum):
     GEN_MUTATION    = Task( Task_UID.GEN_MUTATION   , Task_UID.NONE)
