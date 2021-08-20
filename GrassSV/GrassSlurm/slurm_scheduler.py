@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 
 import subprocess, os
-from enum import IntEnum
+from enum import Enum, IntEnum
 
 class Task_UID(IntEnum):
     GEN_MUTATION = 0
