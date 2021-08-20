@@ -1,9 +1,9 @@
 #!/usr/local/bin/python
 
 import subprocess, os
-from enum import Enum
+from enum import IntEnum
 
-class Task_UID(Enum):
+class Task_UID(IntEnum):
     GEN_MUTATION = 0
     RUN_ART = 1
     CALC_DEPTH = 2
@@ -16,7 +16,7 @@ class Task_UID(Enum):
 
     @staticmethod
     def GetSize() -> int:
-        return int(Task_UID.NONE)
+        return Task_UID.NONE
 
 class Task_Info:
     _JOB_NAMES = {
