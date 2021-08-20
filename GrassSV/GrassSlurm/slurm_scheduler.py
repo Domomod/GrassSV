@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-import commands, os
+import subprocess, os
 from enum import Enum
 
 class Task_UID(Enum):
@@ -135,6 +135,7 @@ class Scheduler:
 
         #Submit command
         print("Submitting Job with command: %s" % cmd)
+
         status,jobnum = commands.getstatusoutput(cmd)
         if status == 0:
             print("Success submitting job")
