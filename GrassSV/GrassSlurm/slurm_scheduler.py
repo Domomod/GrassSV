@@ -68,9 +68,9 @@ class Task_Info:
         return UID, Task_Info._JOB_NAMES[UID], Task_Info._LOG_FILES[UID], Task_Info._ERROR_FILES[UID], Task_Info._BASH_CMDS[UID] 
 
 class Dependency_Info():
-    _IS_SCHEDULED = [False] * Task_UID.GetSize
-    _DEPENDENCY_UID = [Task_UID.NONE] * Task_UID.GetSize
-    _DEPENDENCY_JID = [0] * Task_UID.GetSize 
+    _IS_SCHEDULED = [False] * Task_UID.GetSize()
+    _DEPENDENCY_UID = [Task_UID.NONE] * Task_UID.GetSize()
+    _DEPENDENCY_JID = [0] * Task_UID.GetSize()
 
     @staticmethod
     def SetDependencyForUID(UID : Task_UID, DEPENDENCY_UID : int) -> None:
