@@ -1,3 +1,5 @@
+import argparse, argcomplete
+
 from GrassSV.Scripts import find_hdr
 
 TEXT = 'find_hdr'

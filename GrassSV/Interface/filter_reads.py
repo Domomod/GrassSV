@@ -1,3 +1,5 @@
+import argparse, argcomplete
+
 from ..Region.Load.fastq import FastqInstance
 from ..Region.Load.sam import SamInstance
 from ..Region.BioRegion import Region

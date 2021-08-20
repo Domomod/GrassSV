@@ -1,4 +1,4 @@
-import argparse
+import argparse, argcomplete
 
 from GrassSV.Alignment import load_alignments
 

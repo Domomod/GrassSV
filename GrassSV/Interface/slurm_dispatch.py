@@ -1,3 +1,4 @@
+import argparse, argcomplete
 from GrassSV.GrassSlurm import slurm_scheduler
 from enum import Enum
 
