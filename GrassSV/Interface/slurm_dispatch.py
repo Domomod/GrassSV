@@ -10,7 +10,7 @@ TEXT = 'slurm_dispatch'
 def add_subparser(subparsers):
     slurm_dispatch = subparsers.add_parser(TEXT, help='')
     slurm_dispatch.add_argument('-G', '--genMutations', type=str, default="NONE",
-                                help="[Optional] You may generate mutations using our fastaDNA generator. To do so specify what mutations do you want to generate: [" + ", ".join([enum.name.lower() for enum in GenMutEnums]) + "]",
+                                help="[Optional] You may generate mutations using our fastaDNA generator. To do so specify what mutations do you want to generate: [" + ", ".join([enum.name.lower() for enum in slurm_scheduler.GenMutEnums]) + "]",
                                 choices=[enum.name.lower() for enum in slurm_scheduler.GenMutEnums], required=False)
 
     slurm_dispatch.add_argument('-g', '--genome', type=str, metavar='path', help='The genome file that will be copied to output folder.', required=True)
