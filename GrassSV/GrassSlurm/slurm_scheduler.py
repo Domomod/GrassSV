@@ -134,7 +134,7 @@ class Scheduler:
         os.environ["MUTATION_FOLDER"] = output
 
         for task in PredefinedTasks:
-            if(task.Task_UID == Task_UID.GEN_MUTATION and genMut != GenMutEnums.NONE):
+            if(task == PredefinedTasks.GEN_MUTATION and genMut != GenMutEnums.NONE):
                 Scheduler.run_task_cmd(task)
             #TODO: Pick up on job failure
 
