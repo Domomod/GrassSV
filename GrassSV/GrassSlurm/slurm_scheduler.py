@@ -124,8 +124,6 @@ class PredefinedTasks(Enum):
 class Scheduler:
     @staticmethod
     def schedule_tasks(output : str, genome : str, genMut : GenMutEnums):
-        task : Task
-
         os.makedirs(output, mode = 0o774, exist_ok=True)
         os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
         shutil.copyfile(genome, output+"genome.fsa")
@@ -135,7 +133,7 @@ class Scheduler:
 
         for task in PredefinedTasks:
             if(task == PredefinedTasks.GEN_MUTATION and genMut != GenMutEnums.NONE):
-                Scheduler.run_task_cmd(task)
+                Scheduler.run_task_cmd(task.value)
             #TODO: Pick up on job failure
 
         print("\nCurrent status:\n")
