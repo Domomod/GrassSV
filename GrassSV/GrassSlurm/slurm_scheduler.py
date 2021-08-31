@@ -122,10 +122,9 @@ class PredefinedTasks(Enum):
     RUN_QUAST_ALGA  = Task( Task_UID.RUN_QUAST_ALGA , Task_UID.RUN_ALGA)
 
 class Scheduler:
+    @staticmethod
     def schedule_tasks(self, output : str, genome : str, genMut : GenMutEnums):
         task : Task
-        self.output = output
-        self.genMut = genMut
 
         os.makedirs(output, mode = 0o774, exist_ok=True)
         os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
@@ -136,7 +135,7 @@ class Scheduler:
 
         for task in PredefinedTasks:
             if(task.Task_UID == Task_UID.GEN_MUTATION and genMut != GenMutEnums.NONE):
-                self.run_task_cmd(task)
+                Scheduler.run_task_cmd(task)
             #TODO: Pick up on job failure
 
         print("\nCurrent status:\n")
@@ -144,6 +143,7 @@ class Scheduler:
         #show the current status with 'sjobs'
         #os.system("sjobs")
 
+    @staticmethod
     def run_task_cmd(self, task:Task):
         #Construct command
         Task_UID = task.Task_UID
