@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 
-import subprocess, os
+import subprocess, os, shutil
 from enum import Enum, IntEnum
 
 class GenMutEnums(Enum):
@@ -122,10 +122,15 @@ class PredefinedTasks(Enum):
     RUN_QUAST_ALGA  = Task( Task_UID.RUN_QUAST_ALGA , Task_UID.RUN_ALGA)
 
 class Scheduler:
-    def schedule_tasks(self, output : str, genMut : GenMutEnums):
+    def schedule_tasks(self, output : str, genome : str, genMut : GenMutEnums):
         task : Task
         self.output = output
         self.genMut = genMut
+
+        os.makedirs(output, mode = 0o774, exist_ok=True)
+        os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
+        shutil.copyfile(genome, output+"genome.fsa")
+
         os.environ["SV_TYPE"] = str(genMut)
         os.environ["MUTATION_FOLDER"] = output
 
