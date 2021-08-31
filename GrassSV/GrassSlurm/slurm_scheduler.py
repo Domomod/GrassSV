@@ -123,7 +123,7 @@ class PredefinedTasks(Enum):
 
 class Scheduler:
     @staticmethod
-    def schedule_tasks(self, output : str, genome : str, genMut : GenMutEnums):
+    def schedule_tasks(output : str, genome : str, genMut : GenMutEnums):
         task : Task
 
         os.makedirs(output, mode = 0o774, exist_ok=True)
@@ -144,7 +144,7 @@ class Scheduler:
         #os.system("sjobs")
 
     @staticmethod
-    def run_task_cmd(self, task:Task):
+    def run_task_cmd(task:Task):
         #Construct command
         Task_UID = task.Task_UID
         dependency_exists = Dependency_Info.IsDependentOnAnything(Task_UID)
