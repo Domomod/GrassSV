@@ -3,6 +3,15 @@
 import subprocess, os
 from enum import Enum, IntEnum
 
+class GenMutEnums(Enum):
+    NONE = 0
+    DUP = 1
+    DEL = 2
+    TRA = 3
+    INS = 4
+    INV = 5
+    ALL = 6
+
 class Task_UID(IntEnum):
     GEN_MUTATION = 0
     RUN_ART = 1
@@ -82,8 +91,8 @@ class Dependency_Info():
         Dependency_Info._DEPENDENCY_JID[UID] = jid
 
     @staticmethod
-    def IsDependentOnAnything(UID : Task_UID) -> bool:
-        return Dependency_Info._DEPENDENCY_UID[UID] != Task_UID.NONE
+    def IsDependentOnAnything(UID : Task_UID) -> bool: #A 0 value in _DEPENDENCY_JID overwrites the dependency to Task_UID.NONE
+        return Dependency_Info._DEPENDENCY_UID[UID] != Task_UID.NONE and Dependency_Info._DEPENDENCY_JID != 0
 
     @staticmethod
     def IsReadyForScheduling(UID : Task_UID) -> bool:
@@ -113,12 +122,17 @@ class PredefinedTasks(Enum):
     RUN_QUAST_ALGA  = Task( Task_UID.RUN_QUAST_ALGA , Task_UID.RUN_ALGA)
 
 class Scheduler:
-    def schedule_tasks(self):
+    def schedule_tasks(self, output : str, genMut : GenMutEnums):
         task : Task
+        self.output = output
+        self.genMut = genMut
+        os.environ["SV_TYPE"] = str(genMut)
+        os.environ["MUTATION_FOLDER"] = output
+
         for task in PredefinedTasks:
+            if(task.Task_UID == Task_UID.GEN_MUTATION and genMut != GenMutEnums.NONE):
+                self.run_task_cmd(task)
             #TODO: Pick up on job failure
-            self.run_task_cmd(task)
-            #TODO: Use Dependency_Info.IsReadyForScheduling
 
         print("\nCurrent status:\n")
         print("To Be Done\n")
@@ -131,6 +145,7 @@ class Scheduler:
         dependency_exists = Dependency_Info.IsDependentOnAnything(Task_UID)
         job_id = Dependency_Info.GetDependencyJid(Task_UID)
         dependency = "--dependency=afterok:{} ".format() % job_id if dependency_exists else ""
+
         cmd = "smart_sbatch " + dependency + "-J {} -e {} -o {} {} ".format(*task)
 
         #Submit command
