@@ -155,7 +155,6 @@ class Scheduler:
         #Submit command
         print("Submitting Job with command: %s" % cmd)
 
-        jobnum = subprocess.call(cmd, shell=True)
         args = shlex.split(cmd)
         proc = Popen(args, stdout=PIPE, stderr=PIPE)
         out, err = proc.communicate()
