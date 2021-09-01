@@ -156,6 +156,7 @@ class Scheduler:
         print("Submitting Job with command: %s" % cmd)
 
         args = shlex.split(cmd)
+        print(args)
         proc = Popen(args, stdout=PIPE, stderr=PIPE)
         out, err = proc.communicate()
         exitcode = proc.returncode
