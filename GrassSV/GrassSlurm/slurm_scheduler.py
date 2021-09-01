@@ -153,7 +153,7 @@ class Scheduler:
         #Submit command
         print("Submitting Job with command: %s" % cmd)
 
-        status,jobnum = subprocess.call(cmd, shell=True)
+        jobnum = subprocess.call(cmd, shell=True)
         if status == 0:
             print("Success submitting job")
             Dependency_Info.SetJobIdForUID(Task_UID, jobnum)
