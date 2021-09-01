@@ -72,7 +72,7 @@ class Task_Info:
         Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh ${MUTATION_FOLDER}",
         Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh ${MUTATION_FOLDER}",
         Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh ${MUTATION_FOLDER} alga contigs.fasta_contigs.fasta"
-    }/
+    }
 
     @staticmethod
     def GetTaskInfo( UID : Task_UID):
