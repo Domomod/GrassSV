@@ -64,14 +64,14 @@ class Task_Info:
     }
 
     _BASH_CMDS = {
-        Task_UID.GEN_MUTATION   : __file__ + "/multiple.sh ${SV_TYPE} ${MUTATION_FOLDER}/genome.fsa temp_${SV_TYPE} ${MUTATION_FOLDER}/out.bed",
-        Task_UID.RUN_ART        : __file__ + "/run_art.sh ${MUTATION_FOLDER}",
-        Task_UID.CALC_DEPTH     : __file__ + "/calculate_depth.sh ${MUTATION_FOLDER}",
-        Task_UID.EXTRACT_READS  : __file__ + "/whole_pipeline.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_GRASS      : __file__ + "/whole_pipeline2.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_ALGA       : __file__ + "/whole_pipeline3.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_QUAST      : __file__ + "/whole_pipeline2_alga.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_QUAST_ALGA : __file__ + "/whole_pipeline3.sh ${MUTATION_FOLDER} alga contigs.fasta_contigs.fasta"
+        Task_UID.GEN_MUTATION   : __file__ + "Bash/multiple.sh ${SV_TYPE} ${MUTATION_FOLDER}/genome.fsa temp_${SV_TYPE} ${MUTATION_FOLDER}/out.bed",
+        Task_UID.RUN_ART        : __file__ + "Bash/run_art.sh ${MUTATION_FOLDER}",
+        Task_UID.CALC_DEPTH     : __file__ + "Bash/calculate_depth.sh ${MUTATION_FOLDER}",
+        Task_UID.EXTRACT_READS  : __file__ + "Bash/whole_pipeline.sh ${MUTATION_FOLDER}",
+        Task_UID.RUN_GRASS      : __file__ + "Bash/whole_pipeline2.sh ${MUTATION_FOLDER}",
+        Task_UID.RUN_ALGA       : __file__ + "Bash/whole_pipeline3.sh ${MUTATION_FOLDER}",
+        Task_UID.RUN_QUAST      : __file__ + "Bash/whole_pipeline2_alga.sh ${MUTATION_FOLDER}",
+        Task_UID.RUN_QUAST_ALGA : __file__ + "Bash/whole_pipeline3.sh ${MUTATION_FOLDER} alga contigs.fasta_contigs.fasta"
     }
 
     @staticmethod
@@ -163,4 +163,4 @@ class Scheduler:
             print("Success submitting job, job id: {}", out)
             Dependency_Info.SetJobIdForUID(Task_UID, int(out))
         else:
-            print("Error submitting job, exitcode: {} error: {}", exitcode, err)
+            print("Error submitting job, exitcode: {} error: {}".format(exitcode, err))
