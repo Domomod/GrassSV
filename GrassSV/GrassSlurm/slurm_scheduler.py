@@ -64,15 +64,15 @@ class Task_Info:
     }
 
     _BASH_CMDS = {
-        Task_UID.GEN_MUTATION   : os.path.dirname(__file__) + "Bash/multiple.sh ${SV_TYPE} ${MUTATION_FOLDER}/genome.fsa temp_${SV_TYPE} ${MUTATION_FOLDER}/out.bed",
-        Task_UID.RUN_ART        : os.path.dirname(__file__) + "Bash/run_art.sh ${MUTATION_FOLDER}",
-        Task_UID.CALC_DEPTH     : os.path.dirname(__file__) + "Bash/calculate_depth.sh ${MUTATION_FOLDER}",
-        Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "Bash/whole_pipeline.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "Bash/whole_pipeline2.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "Bash/whole_pipeline3.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "Bash/whole_pipeline2_alga.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "Bash/whole_pipeline3.sh ${MUTATION_FOLDER} alga contigs.fasta_contigs.fasta"
-    }
+        Task_UID.GEN_MUTATION   : os.path.dirname(__file__) + "/Bash/multiple.sh ${SV_TYPE} ${MUTATION_FOLDER}/genome.fsa temp_${SV_TYPE} ${MUTATION_FOLDER}/out.bed",
+        Task_UID.RUN_ART        : os.path.dirname(__file__) + "/Bash/run_art.sh ${MUTATION_FOLDER}",
+        Task_UID.CALC_DEPTH     : os.path.dirname(__file__) + "/Bash/calculate_depth.sh ${MUTATION_FOLDER}",
+        Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "/Bash/whole_pipeline.sh ${MUTATION_FOLDER}",
+        Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh ${MUTATION_FOLDER}",
+        Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh ${MUTATION_FOLDER}",
+        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh ${MUTATION_FOLDER}",
+        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh ${MUTATION_FOLDER} alga contigs.fasta_contigs.fasta"
+    }/
 
     @staticmethod
     def GetTaskInfo( UID : Task_UID):
@@ -127,7 +127,7 @@ class Scheduler:
     def schedule_tasks(output : str, genome : str, genMut : GenMutEnums):
         os.makedirs(output, mode = 0o774, exist_ok=True)
         os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
-        shutil.copyfile(genome, output+"genome.fsa")
+        shutil.copyfile(genome, output+"/genome.fsa")
 
         os.environ["SV_TYPE"] = str(genMut)
         os.environ["MUTATION_FOLDER"] = output
