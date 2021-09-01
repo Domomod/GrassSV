@@ -1,6 +1,8 @@
 #!/usr/local/bin/python
 
-import subprocess, os, shutil
+import shlex
+from subprocess import Popen, PIPE
+import os, shutil
 from enum import Enum, IntEnum
 
 class GenMutEnums(Enum):
@@ -154,8 +156,12 @@ class Scheduler:
         print("Submitting Job with command: %s" % cmd)
 
         jobnum = subprocess.call(cmd, shell=True)
-        if status == 0:
+        args = shlex.split(cmd)
+        proc = Popen(args, stdout=PIPE, stderr=PIPE)
+        out, err = proc.communicate()
+        exitcode = proc.returncode
+        if exitcode == 0:
             print("Success submitting job")
-            Dependency_Info.SetJobIdForUID(Task_UID, jobnum)
+            Dependency_Info.SetJobIdForUID(Task_UID, int(out))
         else:
             print("Error submitting job")
