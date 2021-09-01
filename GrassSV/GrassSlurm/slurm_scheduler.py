@@ -74,7 +74,7 @@ class Task_Info:
 
     @staticmethod
     def GetTaskInfo( UID : Task_UID):
-        return UID, Task_Info._JOB_NAMES[UID], Task_Info._LOG_FILES[UID], Task_Info._ERROR_FILES[UID], Task_Info._BASH_CMDS[UID] 
+        return Task_Info._JOB_NAMES[UID], Task_Info._ERROR_FILES[UID], Task_Info._LOG_FILES[UID], Task_Info._BASH_CMDS[UID] 
 
 class Dependency_Info():
     _IS_SCHEDULED = [False] * Task_UID.GetSize()
@@ -109,7 +109,7 @@ class Task:
         Dependency_Info.SetDependencyForUID(Task_UID, dependency)
 
     def __iter__(self):
-        return Task_Info.GetTaskInfo(self.Task_UID )
+        return iter(Task_Info.GetTaskInfo(self.Task_UID) )
 
 class PredefinedTasks(Enum):
     GEN_MUTATION    = Task( Task_UID.GEN_MUTATION   , Task_UID.NONE)
