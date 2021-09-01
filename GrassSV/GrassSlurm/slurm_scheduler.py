@@ -161,7 +161,7 @@ class Scheduler:
         out, err = proc.communicate()
         exitcode = proc.returncode
         if exitcode == 0:
-            print("Success submitting job, job id: {}".format(out) )
+            print("Success submitting job, job id: {}".format(out[2:-3]))
             Dependency_Info.SetJobIdForUID(Task_UID, int(out))
         else:
             print("Error submitting job, exitcode: {} error: {}".format(exitcode, err))
