@@ -102,7 +102,11 @@ class Dependency_Info():
 
     @staticmethod
     def GetDependencyJid(UID : Task_UID) -> int:
-        return Dependency_Info._DEPENDENCY_JID[Dependency_Info._DEPENDENCY_UID[UID]]
+        DEP_UID = Dependency_Info._DEPENDENCY_UID[UID]
+        if DEP_UID == Task_UID.NONE:
+            return 0
+        else:
+            return Dependency_Info._DEPENDENCY_JID[DEP_UID]
 
 class Task:
     def __init__(self, Task_UID : Task_UID, dependency : Task_UID = Task_UID.NONE) -> None:
