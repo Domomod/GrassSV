@@ -148,7 +148,7 @@ class Scheduler:
         Task_UID = task.Task_UID
         dependency_exists = Dependency_Info.IsDependentOnAnything(Task_UID)
         job_id = Dependency_Info.GetDependencyJid(Task_UID)
-        dependency = "--dependency=afterok:{} ".format() % job_id if dependency_exists else ""
+        dependency = "--dependency=afterok:{} ".format(job_id) if dependency_exists else ""
 
         cmd = "smart_sbatch " + dependency + "-J {} -e {} -o {} {} ".format(*task)
 
@@ -161,7 +161,7 @@ class Scheduler:
         out, err = proc.communicate()
         exitcode = proc.returncode
         if exitcode == 0:
-            print("Success submitting job, job id: {}", out)
+            print("Success submitting job, job id: {}".format(out) )
             Dependency_Info.SetJobIdForUID(Task_UID, int(out))
         else:
             print("Error submitting job, exitcode: {} error: {}".format(exitcode, err))
