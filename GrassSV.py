@@ -1,4 +1,7 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
+import argcomplete
+
 from GrassSV.Interface import main
 
 if __name__ == '__main__':
