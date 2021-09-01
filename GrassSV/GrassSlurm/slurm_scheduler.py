@@ -133,7 +133,7 @@ class Scheduler:
         os.environ["MUTATION_FOLDER"] = output
 
         for task in PredefinedTasks:
-            if(task == PredefinedTasks.GEN_MUTATION and genMut != GenMutEnums.NONE):
+            if(task != PredefinedTasks.GEN_MUTATION or genMut != GenMutEnums.NONE):
                 Scheduler.run_task_cmd(task.value)
             #TODO: Pick up on job failure
 
@@ -160,7 +160,7 @@ class Scheduler:
         out, err = proc.communicate()
         exitcode = proc.returncode
         if exitcode == 0:
-            print("Success submitting job")
+            print("Success submitting job, job id: {}", out)
             Dependency_Info.SetJobIdForUID(Task_UID, int(out))
         else:
-            print("Error submitting job")
+            print("Error submitting job, exitcode: {} error: {}", exitcode, err)
