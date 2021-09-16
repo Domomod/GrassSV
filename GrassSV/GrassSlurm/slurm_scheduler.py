@@ -63,15 +63,15 @@ class Task_Info:
         Task_UID.RUN_QUAST_ALGA : "run_quast_alga.err",
     }
 
-    _BASH_CMDS = {
-        Task_UID.GEN_MUTATION   : os.path.dirname(__file__) + "/Bash/multiple.sh ${SV_TYPE} ${MUTATION_FOLDER}/genome.fsa temp_${SV_TYPE} ${MUTATION_FOLDER}/out.bed",
-        Task_UID.RUN_ART        : os.path.dirname(__file__) + "/Bash/run_art.sh ${MUTATION_FOLDER}",
-        Task_UID.CALC_DEPTH     : os.path.dirname(__file__) + "/Bash/calculate_depth.sh ${MUTATION_FOLDER}",
-        Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "/Bash/whole_pipeline.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh ${MUTATION_FOLDER}",
-        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh ${MUTATION_FOLDER} alga contigs.fasta_contigs.fasta"
+    _BASH_CMDS = { # 0 SV_TYPE # 1 MUTATION_FOLDER
+        Task_UID.GEN_MUTATION   : os.path.dirname(__file__) + "/Bash/multiple.sh {0} {1}/genome.fsa temp_{0} {1}/out.bed",
+        Task_UID.RUN_ART        : os.path.dirname(__file__) + "/Bash/run_art.sh {1}",
+        Task_UID.CALC_DEPTH     : os.path.dirname(__file__) + "/Bash/calculate_depth.sh {1}",
+        Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "/Bash/whole_pipeline.sh {1}",
+        Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh {1}",
+        Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1}",
+        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
+        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta_contigs.fasta"
     }
 
     @staticmethod
@@ -133,12 +133,9 @@ class Scheduler:
         os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
         shutil.copyfile(genome, output+"/genome.fsa")
 
-        os.environ["SV_TYPE"] = str(genMut)
-        os.environ["MUTATION_FOLDER"] = output
-
         for task in PredefinedTasks:
             if(task != PredefinedTasks.GEN_MUTATION or genMut != GenMutEnums.NONE):
-                Scheduler.run_task_cmd(task.value)
+                Scheduler.run_task_cmd(task.value, output, str(genMut))
             #TODO: Pick up on job failure
 
         print("\nCurrent status:\n")
@@ -147,14 +144,15 @@ class Scheduler:
         #os.system("sjobs")
 
     @staticmethod
-    def run_task_cmd(task:Task):
+    def run_task_cmd(task:Task, output : str, genmut : str):
         #Construct command
         Task_UID = task.Task_UID
         dependency_exists = Dependency_Info.IsDependentOnAnything(Task_UID)
         job_id = Dependency_Info.GetDependencyJid(Task_UID)
         dependency = "--dependency=afterok:{} ".format(job_id) if dependency_exists else ""
 
-        cmd = "smart_sbatch " + dependency + "-J {} -e {} -o {} {} ".format(*task)
+        job, err, out, bash = task
+        cmd = "smart_sbatch " + dependency + "-J {} -e {} -o {} {} ".format(job, err, out, bash.format(genmut, output))
 
         #Submit command
         print("Submitting Job with command: %s" % cmd)
