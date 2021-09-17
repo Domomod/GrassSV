@@ -152,7 +152,7 @@ class Scheduler:
         dependency = "--dependency=afterok:{} ".format(job_id) if dependency_exists else ""
 
 
-        output_dir = "/{}".format(output) if output else ""
+        output_dir = "{}/".format(output) if output else ""
         job, err, log, bash = task
         cmd = "smart_sbatch " + dependency + "-J {} -e {}{} -o {}{} {}".format(job, output_dir, err, output_dir, log, bash.format(genmut, output))
 
