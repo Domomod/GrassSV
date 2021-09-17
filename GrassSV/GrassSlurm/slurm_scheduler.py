@@ -135,7 +135,7 @@ class Scheduler:
 
         for task in PredefinedTasks:
             if(task != PredefinedTasks.GEN_MUTATION or genMut != GenMutEnums.NONE):
-                Scheduler.run_task_cmd(task.value, output, str(genMut))
+                Scheduler.run_task_cmd(task.value, output, genMut.value)
             #TODO: Pick up on job failure
 
         print("\nCurrent status:\n")
@@ -144,15 +144,17 @@ class Scheduler:
         #os.system("sjobs")
 
     @staticmethod
-    def run_task_cmd(task:Task, output : str, genmut : str):
+    def run_task_cmd(task:Task, output : str, genmut : int):
         #Construct command
         Task_UID = task.Task_UID
         dependency_exists = Dependency_Info.IsDependentOnAnything(Task_UID)
         job_id = Dependency_Info.GetDependencyJid(Task_UID)
         dependency = "--dependency=afterok:{} ".format(job_id) if dependency_exists else ""
 
-        job, err, out, bash = task
-        cmd = "smart_sbatch " + dependency + "-J {} -e {} -o {} {} ".format(job, err, out, bash.format(genmut, output))
+
+        output_dir = "/{}".format(output) if output else ""
+        job, err, log, bash = task
+        cmd = "smart_sbatch " + dependency + "-J {} -e {}{} -o {}{} {}".format(job, output_dir, err, output_dir, log, bash.format(genmut, output))
 
         #Submit command
         print("Submitting Job with command: %s" % cmd)
