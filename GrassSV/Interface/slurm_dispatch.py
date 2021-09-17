@@ -18,4 +18,4 @@ def add_subparser(subparsers):
 
 
 def action(args):
-    slurm_scheduler.Scheduler.schedule_tasks(args.output, args.genome, args.genMutations)
+    slurm_scheduler.Scheduler.schedule_tasks(args.output, args.genome, slurm_scheduler.GenMutEnums[args.genMutations.lower()])
