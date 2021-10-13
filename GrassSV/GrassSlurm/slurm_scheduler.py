@@ -47,8 +47,8 @@ class Task_Info:
         Task_UID.CALC_DEPTH     : "calculate_depth.out",
         Task_UID.EXTRACT_READS  : "extract_reads.out",
         Task_UID.RUN_GRASS      : "run_grasshopper.out",
-        Task_UID.RUN_ALGA       : "run_quast.out",
-        Task_UID.RUN_QUAST      : "run_alga.out",
+        Task_UID.RUN_ALGA       : "run_alga.out",
+        Task_UID.RUN_QUAST      : "run_quast.out",
         Task_UID.RUN_QUAST_ALGA : "run_quast_alga.out"
     }
 
@@ -58,8 +58,8 @@ class Task_Info:
         Task_UID.CALC_DEPTH     : "calculate_depth.err",
         Task_UID.EXTRACT_READS  : "extract_reads.err",
         Task_UID.RUN_GRASS      : "run_grasshopper.err",
-        Task_UID.RUN_ALGA       : "run_quast.err",
-        Task_UID.RUN_QUAST      : "run_alga.err",
+        Task_UID.RUN_ALGA       : "run_alga.err",
+        Task_UID.RUN_QUAST      : "run_quast.err",
         Task_UID.RUN_QUAST_ALGA : "run_quast_alga.err",
     }
 
@@ -69,8 +69,8 @@ class Task_Info:
         Task_UID.CALC_DEPTH     : os.path.dirname(__file__) + "/Bash/calculate_depth.sh {1}",
         Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "/Bash/whole_pipeline.sh {1}",
         Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh {1}",
-        Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1}",
-        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
+        Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
+        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper contigs.fsa",
         Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta_contigs.fasta"
     }
 

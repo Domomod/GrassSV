@@ -11,9 +11,7 @@ module load python/3.7.3
 data=${1:-.}
 assembler=${2:-grasshopper}
 contigs=${3:-contigs.fsa}
-         
-echo "XXXXXX $contigs"
-:
+        
 for coverage in 5 7 10 12
 do
 	for margin in 150 #250 350 450
