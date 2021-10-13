@@ -70,7 +70,7 @@ class Task_Info:
         Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "/Bash/whole_pipeline.sh {1}",
         Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh {1}",
         Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
-        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper contigs.fsa",
+        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper contigs.fasta",
         Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta_contigs.fasta"
     }
 
@@ -94,7 +94,7 @@ class Dependency_Info():
 
     @staticmethod
     def IsDependentOnAnything(UID : Task_UID) -> bool: #A 0 value in _DEPENDENCY_JID overwrites the dependency to Task_UID.NONE
-        return Dependency_Info._DEPENDENCY_UID[UID] != Task_UID.NONE and Dependency_Info._DEPENDENCY_JID != 0
+        return Dependency_Info._DEPENDENCY_UID[UID] != Task_UID.NONE and Dependency_Info._DEPENDENCY_JID[UID] != 0
 
     @staticmethod
     def IsReadyForScheduling(UID : Task_UID) -> bool:
@@ -134,7 +134,7 @@ class Scheduler:
         shutil.copyfile(genome, output+"/genome.fsa")
 
         for task in PredefinedTasks:
-            if(task != PredefinedTasks.GEN_MUTATION or genMut != GenMutEnums.NONE):
+            if( not((task == PredefinedTasks.GEN_MUTATION or task == PredefinedTasks.RUN_ART) and genMut == GenMutEnums.NONE) ):
                 Scheduler.run_task_cmd(task.value, output, genMut.value)
             #TODO: Pick up on job failure
 
@@ -149,7 +149,7 @@ class Scheduler:
         Task_UID = task.Task_UID
         dependency_exists = Dependency_Info.IsDependentOnAnything(Task_UID)
         job_id = Dependency_Info.GetDependencyJid(Task_UID)
-        dependency = "--dependency=afterok:{} ".format(job_id) if dependency_exists else ""
+        dependency = ("--dependency=afterok:{} ".format(job_id)) if dependency_exists else ""
 
 
         output_dir = "{}/".format(output) if output else ""
