@@ -71,7 +71,7 @@ class Task_Info:
         Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh {1}",
         Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
         Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper contigs.fasta",
-        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta_contigs.fasta"
+        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta_contigs.fasta quast/contigs_reports/all_alignments_contigs-fasta_contigs.tsv"
     }
 
     @staticmethod
@@ -94,7 +94,8 @@ class Dependency_Info():
 
     @staticmethod
     def IsDependentOnAnything(UID : Task_UID) -> bool: #A 0 value in _DEPENDENCY_JID overwrites the dependency to Task_UID.NONE
-        return Dependency_Info._DEPENDENCY_UID[UID] != Task_UID.NONE and Dependency_Info._DEPENDENCY_JID[UID] != 0
+        DEP_UID = Dependency_Info._DEPENDENCY_UID[UID]
+        return DEP_UID != Task_UID.NONE and Dependency_Info._DEPENDENCY_JID[DEP_UID] != 0
 
     @staticmethod
     def IsReadyForScheduling(UID : Task_UID) -> bool:
@@ -135,8 +136,10 @@ class Scheduler:
 
         for task in PredefinedTasks:
             if( not((task == PredefinedTasks.GEN_MUTATION or task == PredefinedTasks.RUN_ART) and genMut == GenMutEnums.NONE) ):
-                Scheduler.run_task_cmd(task.value, output, genMut.value)
-            #TODO: Pick up on job failure
+                success = Scheduler.run_task_cmd(task.value, output, genMut.value)
+                if success != 0: 
+                    break    
+        #TODO: Pick up on job failure
 
         print("\nCurrent status:\n")
         print("To Be Done\n")
@@ -149,7 +152,7 @@ class Scheduler:
         Task_UID = task.Task_UID
         dependency_exists = Dependency_Info.IsDependentOnAnything(Task_UID)
         job_id = Dependency_Info.GetDependencyJid(Task_UID)
-        dependency = ("--dependency=afterok:{} ".format(job_id)) if dependency_exists else ""
+        dependency = "--dependency=afterok:{} ".format(job_id) if dependency_exists else ""
 
 
         output_dir = "{}/".format(output) if output else ""
@@ -157,7 +160,7 @@ class Scheduler:
         cmd = "smart_sbatch " + dependency + "-J {} -e {}log/{} -o {}log/{} {}".format(job, output_dir, err, output_dir, log, bash.format(genmut, output))
 
         #Submit command
-        print("Submitting Job with command: %s" % cmd)
+        print("\nSubmitting Job with command: %s" % cmd)
 
         args = shlex.split(cmd)
         print(args)
@@ -169,3 +172,4 @@ class Scheduler:
             Dependency_Info.SetJobIdForUID(Task_UID, int(out))
         else:
             print("Error submitting job, exitcode: {} error: {}".format(exitcode, err))
+        return exitcode
