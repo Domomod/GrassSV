@@ -144,6 +144,11 @@ def find_contig_patterns(contigs):
         else:
             others.append(contig)
 
+    print(f"""
+    Insertions  | Inversions | Deletions  | DupBreakpoints | Trans_brakpoins| Potential_Dup  | Others
+    {len(insertions):12}|{len(inversions):12}|{len(deletions):12}|{len(duplication_breakpoints):16}|{len(translocation_breakpoints):16}|{len(potential_duplications):16}|{len(others):7}
+    """)
+            
     return ContigPatternsData(
         insertions=chromosome_position_sort(insertions),
         inversions=chromosome_position_sort(inversions),
