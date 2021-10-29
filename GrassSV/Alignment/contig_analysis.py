@@ -28,9 +28,10 @@ def inversion(first: Alignment, second: Alignment) -> Pattern:
             return b+1, c
         elif c < d: #Section from c to d is outside of inversion
             return b, c-1
-
-    start, end = deduce_inversion_berakpoints(first, second)
-
+        
+    x = deduce_inversion_berakpoints(first, second)
+    print(f"deduce_inv = {x}\n")
+    start, end = x
     return Pattern(
         chromosome=first.chromosome,
         start=start,
