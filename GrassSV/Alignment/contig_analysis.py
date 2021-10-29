@@ -23,7 +23,7 @@ def inversion(first: Alignment, second: Alignment) -> Pattern:
         if b > c: # Inversions that were read from 5' to 3' schould be sorted decreasingly
             a, b, c, d = d, c ,b ,a
 
-
+        print(f"b {b} c {c}\n")
         if a < b: #Section from a to b is outside of inversion
             return b+1, c
         elif c < d: #Section from c to d is outside of inversion
