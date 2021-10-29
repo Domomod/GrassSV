@@ -31,7 +31,8 @@ def inversion(first: Alignment, second: Alignment) -> Pattern:
         print(f"Sorted Al-space: {format}")
         if a < b: #Section from a to b is outside of inversion
             return b+1, c
-        elif c < d: #Section from c to d is outside of inversion
+        #elif c < d: #Section from c to d is outside of inversion
+        else
             return b, c-1
         
     x = deduce_inversion_berakpoints(first, second)
