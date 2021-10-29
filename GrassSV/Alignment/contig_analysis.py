@@ -23,10 +23,10 @@ def inversion(first: Alignment, second: Alignment) -> Pattern:
         if b > c: # Inversions that were read from 5' to 3' schould be sorted decreasingly
             a, b, c, d = d, c ,b ,a
 
-        print(f"Contig space   : a{a_contig:15}|b {b_contig:15}|c {c_contig:15}|d{d_contig:15}")
-        print(f"Alignment space: a{a:15}|b {b:15}|c {c:15}|d{d:15}")
+        print(f"Contig space   : a {a_contig:15}|b {b_contig:15}|c {c_contig:15}|d{d_contig:15}")
+        print(f"Alignment space: a {a:15}|b {b:15}|c {c:15}|d{d:15}")
         alignment_space_sorted = sorted([coord, name] for coord, name in zip([a,b,c,d], ["a", "b", "c", "d"]))
-        format = "|".join([f"{name}{coord:15}" for (coord, name) in alignment_space_sorted])
+        format = "|".join([f"{name} {coord:15}" for (coord, name) in alignment_space_sorted])
         print(f"Sorted Al-space: {format}")
         if a < b: #Section from a to b is outside of inversion
             return b+1, c
