@@ -42,5 +42,12 @@ def load_alignments(path):
 
             alignments.append(alignment)
             contig = line[5]
-
+    
+    print(f""""
+    ===LOADED CONTIGS PER NUMBER OF ALIGNMENTS TABLE===
+    single alignment | two_alignments | many_alignments
+    {len(single_alignments):17}|{len(two_alignments_contigs):16}|{len(many_alignments_contigs):16}
+    
+    """)
+            
     return [single_alignments, two_alignments_contigs, many_alignments_contigs]
