@@ -158,7 +158,17 @@ class Scheduler:
         output_dir = "{}/".format(output) if output else ""
         job, err, log, bash = task
         cmd = "smart_sbatch " + dependency + "-J {} -e {}log/{} -o {}log/{} {}".format(job, output_dir, err, output_dir, log, bash.format(genmut, output))
-
+        
+        try:
+            os.remove("{}log/{}".format(output_dir, err))
+        except OSError:
+            pass
+        
+        try:
+            os.remove("{}log/{}".format(output_dir, log))
+        except OSError:
+            pass
+        
         #Submit command
         print("\nSubmitting Job with command: %s" % cmd)
 
