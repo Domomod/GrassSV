@@ -13,7 +13,11 @@ module load bowtie2/2.2.3
 module load samtools/1.6.0
 module load cuda/10.0.130_410.48
 
-TRIMMOMATIC_PATH=/home/plgrid-groups/plggillumina/plgDominikKrzysztofJulia/tools/Trimmomatic-0.39
+if [[ -z $TRIMMOMATIC_PATH ]]
+then
+  echo "[WARNING] TRIMMOMATIC_PATH not set, falling back to default value" > 2
+  TRIMMOMATIC_PATH=/home/tools/Trimmomatic-0.39
+fi
 
 coverage_dir=$1
 grasshopper_name=$2
