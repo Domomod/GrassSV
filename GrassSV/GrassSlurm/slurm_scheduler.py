@@ -135,7 +135,7 @@ class Scheduler:
         shutil.copyfile(genome, output+"/genome.fsa")
 
         for task in PredefinedTasks:
-            if( task.Task_UID >= starting_task.TASK_UID):
+            if( task.value.Task_UID >= starting_task):
                 #if( not((task == PredefinedTasks.GEN_MUTATION or task == PredefinedTasks.RUN_ART) and genMut == GenMutEnums.NONE) ):
                 success = Scheduler.run_task_cmd(task.value, output, genMut.value)
                 if success != 0: 
