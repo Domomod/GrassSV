@@ -123,19 +123,20 @@ class PredefinedTasks(Enum):
     CALC_DEPTH      = Task( Task_UID.CALC_DEPTH     , Task_UID.RUN_ART)
     EXTRACT_READS   = Task( Task_UID.EXTRACT_READS  , Task_UID.CALC_DEPTH)
     RUN_GRASS       = Task( Task_UID.RUN_GRASS      , Task_UID.EXTRACT_READS)
-    RUN_ALGA        = Task( Task_UID.RUN_ALGA       , Task_UID.EXTRACT_READS)
     RUN_QUAST       = Task( Task_UID.RUN_QUAST      , Task_UID.RUN_GRASS)
+    RUN_ALGA        = Task( Task_UID.RUN_ALGA       , Task_UID.EXTRACT_READS)
     RUN_QUAST_ALGA  = Task( Task_UID.RUN_QUAST_ALGA , Task_UID.RUN_ALGA)
 
 class Scheduler:
     @staticmethod
-    def schedule_tasks(output : str, genome : str, genMut : GenMutEnums):
+    def schedule_tasks(output : str, genome : str,  starting_task : Task_UID , genMut : GenMutEnums):
         os.makedirs(output, mode = 0o774, exist_ok=True)
         os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
         shutil.copyfile(genome, output+"/genome.fsa")
 
         for task in PredefinedTasks:
-            if( not((task == PredefinedTasks.GEN_MUTATION or task == PredefinedTasks.RUN_ART) and genMut == GenMutEnums.NONE) ):
+            if( task.Task_UID >= starting_task.TASK_UID):
+                #if( not((task == PredefinedTasks.GEN_MUTATION or task == PredefinedTasks.RUN_ART) and genMut == GenMutEnums.NONE) ):
                 success = Scheduler.run_task_cmd(task.value, output, genMut.value)
                 if success != 0: 
                     break    
