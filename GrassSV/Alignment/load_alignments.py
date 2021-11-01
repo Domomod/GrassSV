@@ -1,4 +1,5 @@
 from GrassSV.Alignment.alignments import Alignment, Contig
+import os
 
 
 def load_alignments(path):
@@ -9,6 +10,12 @@ def load_alignments(path):
     from GrassSV.Region.Load.csv_loader import correct_ref_name
     input = open(path, "r")
 
+    printf(f"""
+    ========= OPENED ALIGNMENTS FILE ==================
+    File path: {path}
+    File size: {os.path.getsize(path)}
+    """)
+    
     single_alignments = []
     two_alignments_contigs = []
     many_alignments_contigs = []
