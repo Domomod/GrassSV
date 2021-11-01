@@ -20,8 +20,8 @@ class Task_UID(IntEnum):
     CALC_DEPTH = 2
     EXTRACT_READS = 3
     RUN_GRASS = 4
-    RUN_QUAST = 5
-    RUN_ALGA = 6
+    RUN_ALGA = 5
+    RUN_QUAST = 6
     RUN_QUAST_ALGA = 7
     NONE = 8
 
@@ -70,8 +70,8 @@ class Task_Info:
         Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "/Bash/whole_pipeline.sh {1}",
         Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh {1}",
         Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
-        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper contigs.fasta",
-        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta quast/contigs_reports/all_alignments_contigs-fasta_contigs.tsv"
+        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper",
+        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga"
     }
 
     @staticmethod
