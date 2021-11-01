@@ -11,7 +11,7 @@ module load python/3.7.3
 data=${1:-.}
 assembler=${2:-grasshopper}
 contigs=${3:-contigs.fsa}
-alignments=${3:-quast/contigs_reports/all_alignments_contigs.tsv}        
+alignments=${4:-quast/contigs_reports/all_alignments_contigs.tsv}        
 
 for coverage in 5 7 10 12
 do
