@@ -70,8 +70,8 @@ class Task_Info:
         Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "/Bash/whole_pipeline.sh {1}",
         Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh {1}",
         Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
-        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper",
-        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga"
+        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper contigs.fasta",
+        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta"
     }
 
     @staticmethod
