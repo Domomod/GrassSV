@@ -10,7 +10,7 @@ def load_alignments(path):
     from GrassSV.Region.Load.csv_loader import correct_ref_name
     input = open(path, "r")
 
-    printf(f"""
+    print(f"""
     ========= OPENED ALIGNMENTS FILE ==================
     File path: {path}
     File size: {os.path.getsize(path)}
