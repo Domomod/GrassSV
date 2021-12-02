@@ -13,7 +13,11 @@ module load bowtie2/2.2.3
 module load samtools/1.6.0
 module load cuda/10.0.130_410.48
 
-TRIMMOMATIC_PATH=/home/plgrid-groups/plggillumina/plgDominikKrzysztofJulia/tools/Trimmomatic-0.39
+if [[ -z $TRIMMOMATIC_PATH ]]
+then
+  echo "[WARNING] TRIMMOMATIC_PATH not set, falling back to default value" > 2
+  TRIMMOMATIC_PATH=/home/tools/Trimmomatic-0.39
+fi
 
 coverage_dir=$1
 grasshopper_name=$2
@@ -22,8 +26,8 @@ grasshopper_dir=$coverage_dir/$grasshopper_name
 printf "[+] Grasshopper ("$grasshopper_dir"):\t"
 mkdir -p $grasshopper_dir
 
-grasshopper preprocess $coverage_dir/filtered_reads_C1.fastq $coverage_dir/filtered_reads_C2.fastq -ds=$grasshopper_dir -trimpath=$TRIMMOMATIC_PATH -trimparams="SLIDINGWINDOW:8:15 LEADING:5 TRAILING:5 MINLEN:30"
-grasshopper build $grasshopper_dir -ps=33
+grasshopper preprocess $coverage_dir/filtered_reads_C1.fastq $coverage_dir/filtered_reads_C2.fastq -ds=$grasshopper_dir -trimpath=$TRIMMOMATIC_PATH
+grasshopper build $grasshopper_dir
 grasshopper traverse $grasshopper_dir
 grasshopper correct $grasshopper_dir
 printf "Done\n"

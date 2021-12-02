@@ -23,14 +23,21 @@ def inversion(first: Alignment, second: Alignment) -> Pattern:
         if b > c: # Inversions that were read from 5' to 3' schould be sorted decreasingly
             a, b, c, d = d, c ,b ,a
 
-
+        print(f"Contigs        : [ {first.contig_start:>15}-{first.contig_end:<15}] [{second.contig_start:>15}-{second.contig_end:<15}]")
+        print(f"Contig space   : a {a_contig:<15}|b {b_contig:<15}|c {c_contig:<15}|d{d_contig:<15}")
+        print(f"Alignment space: a {a:<15}|b {b:<15}|c {c:<15}|d{d:<15}")
+        alignment_space_sorted = sorted([coord, name] for coord, name in zip([a,b,c,d], ["a", "b", "c", "d"]))
+        format = "|".join([f"{name} {coord:<15}" for (coord, name) in alignment_space_sorted])
+        print(f"Sorted Al-space: {format}")
         if a < b: #Section from a to b is outside of inversion
             return b+1, c
-        elif c < d: #Section from c to d is outside of inversion
+        #elif c < d: #Section from c to d is outside of inversion
+        else:
             return b, c-1
-
-    start, end = deduce_inversion_berakpoints(first, second)
-
+        
+    x = deduce_inversion_berakpoints(first, second)
+    print(f"deduce_inv = {x}\n")
+    start, end = x
     return Pattern(
         chromosome=first.chromosome,
         start=start,
@@ -144,6 +151,11 @@ def find_contig_patterns(contigs):
         else:
             others.append(contig)
 
+    print(f"""
+    Insertions  | Inversions | Deletions  | DupBreakpoints | Trans_brakpoins| Potential_Dup  | Others
+    {len(insertions):12}|{len(inversions):12}|{len(deletions):12}|{len(duplication_breakpoints):16}|{len(translocation_breakpoints):16}|{len(potential_duplications):16}|{len(others):7}
+    """)
+            
     return ContigPatternsData(
         insertions=chromosome_position_sort(insertions),
         inversions=chromosome_position_sort(inversions),

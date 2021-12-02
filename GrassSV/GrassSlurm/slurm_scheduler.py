@@ -20,8 +20,8 @@ class Task_UID(IntEnum):
     CALC_DEPTH = 2
     EXTRACT_READS = 3
     RUN_GRASS = 4
-    RUN_QUAST = 5
-    RUN_ALGA = 6
+    RUN_ALGA = 5
+    RUN_QUAST = 6
     RUN_QUAST_ALGA = 7
     NONE = 8
 
@@ -47,8 +47,8 @@ class Task_Info:
         Task_UID.CALC_DEPTH     : "calculate_depth.out",
         Task_UID.EXTRACT_READS  : "extract_reads.out",
         Task_UID.RUN_GRASS      : "run_grasshopper.out",
-        Task_UID.RUN_ALGA       : "run_quast.out",
-        Task_UID.RUN_QUAST      : "run_alga.out",
+        Task_UID.RUN_ALGA       : "run_alga.out",
+        Task_UID.RUN_QUAST      : "run_quast.out",
         Task_UID.RUN_QUAST_ALGA : "run_quast_alga.out"
     }
 
@@ -58,8 +58,8 @@ class Task_Info:
         Task_UID.CALC_DEPTH     : "calculate_depth.err",
         Task_UID.EXTRACT_READS  : "extract_reads.err",
         Task_UID.RUN_GRASS      : "run_grasshopper.err",
-        Task_UID.RUN_ALGA       : "run_quast.err",
-        Task_UID.RUN_QUAST      : "run_alga.err",
+        Task_UID.RUN_ALGA       : "run_alga.err",
+        Task_UID.RUN_QUAST      : "run_quast.err",
         Task_UID.RUN_QUAST_ALGA : "run_quast_alga.err",
     }
 
@@ -69,9 +69,9 @@ class Task_Info:
         Task_UID.CALC_DEPTH     : os.path.dirname(__file__) + "/Bash/calculate_depth.sh {1}",
         Task_UID.EXTRACT_READS  : os.path.dirname(__file__) + "/Bash/whole_pipeline.sh {1}",
         Task_UID.RUN_GRASS      : os.path.dirname(__file__) + "/Bash/whole_pipeline2.sh {1}",
-        Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1}",
-        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
-        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta_contigs.fasta"
+        Task_UID.RUN_ALGA       : os.path.dirname(__file__) + "/Bash/whole_pipeline2_alga.sh {1}",
+        Task_UID.RUN_QUAST      : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} grasshopper contigs.fasta",
+        Task_UID.RUN_QUAST_ALGA : os.path.dirname(__file__) + "/Bash/whole_pipeline3.sh {1} alga contigs.fasta"
     }
 
     @staticmethod
@@ -94,7 +94,8 @@ class Dependency_Info():
 
     @staticmethod
     def IsDependentOnAnything(UID : Task_UID) -> bool: #A 0 value in _DEPENDENCY_JID overwrites the dependency to Task_UID.NONE
-        return Dependency_Info._DEPENDENCY_UID[UID] != Task_UID.NONE and Dependency_Info._DEPENDENCY_JID != 0
+        DEP_UID = Dependency_Info._DEPENDENCY_UID[UID]
+        return DEP_UID != Task_UID.NONE and Dependency_Info._DEPENDENCY_JID[DEP_UID] != 0
 
     @staticmethod
     def IsReadyForScheduling(UID : Task_UID) -> bool:
@@ -122,21 +123,24 @@ class PredefinedTasks(Enum):
     CALC_DEPTH      = Task( Task_UID.CALC_DEPTH     , Task_UID.RUN_ART)
     EXTRACT_READS   = Task( Task_UID.EXTRACT_READS  , Task_UID.CALC_DEPTH)
     RUN_GRASS       = Task( Task_UID.RUN_GRASS      , Task_UID.EXTRACT_READS)
-    RUN_ALGA        = Task( Task_UID.RUN_ALGA       , Task_UID.EXTRACT_READS)
     RUN_QUAST       = Task( Task_UID.RUN_QUAST      , Task_UID.RUN_GRASS)
+    RUN_ALGA        = Task( Task_UID.RUN_ALGA       , Task_UID.EXTRACT_READS)
     RUN_QUAST_ALGA  = Task( Task_UID.RUN_QUAST_ALGA , Task_UID.RUN_ALGA)
 
 class Scheduler:
     @staticmethod
-    def schedule_tasks(output : str, genome : str, genMut : GenMutEnums):
+    def schedule_tasks(output : str, genome : str,  starting_task : Task_UID , genMut : GenMutEnums):
         os.makedirs(output, mode = 0o774, exist_ok=True)
         os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
         shutil.copyfile(genome, output+"/genome.fsa")
 
         for task in PredefinedTasks:
-            if(task != PredefinedTasks.GEN_MUTATION or genMut != GenMutEnums.NONE):
-                Scheduler.run_task_cmd(task.value, output, genMut.value)
-            #TODO: Pick up on job failure
+            if( task.value.Task_UID >= starting_task):
+                #if( not((task == PredefinedTasks.GEN_MUTATION or task == PredefinedTasks.RUN_ART) and genMut == GenMutEnums.NONE) ):
+                success = Scheduler.run_task_cmd(task.value, output, genMut.value)
+                if success != 0: 
+                    break    
+        #TODO: Pick up on job failure
 
         print("\nCurrent status:\n")
         print("To Be Done\n")
@@ -155,9 +159,19 @@ class Scheduler:
         output_dir = "{}/".format(output) if output else ""
         job, err, log, bash = task
         cmd = "smart_sbatch " + dependency + "-J {} -e {}log/{} -o {}log/{} {}".format(job, output_dir, err, output_dir, log, bash.format(genmut, output))
-
+        
+        try:
+            os.remove("{}log/{}".format(output_dir, err))
+        except OSError:
+            pass
+        
+        try:
+            os.remove("{}log/{}".format(output_dir, log))
+        except OSError:
+            pass
+        
         #Submit command
-        print("Submitting Job with command: %s" % cmd)
+        print("\nSubmitting Job with command: %s" % cmd)
 
         args = shlex.split(cmd)
         print(args)
@@ -169,3 +183,4 @@ class Scheduler:
             Dependency_Info.SetJobIdForUID(Task_UID, int(out))
         else:
             print("Error submitting job, exitcode: {} error: {}".format(exitcode, err))
+        return exitcode

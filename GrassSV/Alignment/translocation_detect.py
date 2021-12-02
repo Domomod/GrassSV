@@ -78,7 +78,7 @@ class SingleChromosomeTranslocationFilter(object):
                 if not succes:
                     unused_deletions.append(deletion)
 
-        if last_iteration_succesfull == False:
+        if last_iteration_succesfull == False and deletions:
             unused_deletions.append(deletions[-1])
 
         return unused_deletions
