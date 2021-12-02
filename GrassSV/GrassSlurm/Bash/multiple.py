@@ -154,24 +154,24 @@ if __name__ == '__main__':
     TEMP_FILE= sys.argv[3]
     BED_FILE= sys.argv[4]
     chromosomes = load_chroms()
-    point_num = 200 if sv_type==-1 else 500
+    point_num = 200 if sv_type==6 else 500
     for chromosome in chromosomes:
         region_num_per_chrom = int(chromosome.length / 15000)
         chromosome.generate_regions_points(region_num_per_chrom, int(point_num / len(chromosomes)) + 2, SIZE)
     much = 500 if sv_type!=-1 else 100
     SIZE = 0
     for i in range(much):
-        if sv_type==-1:
+        if sv_type==6:
             SIZE += 500 if i % 10 == 0 else 0
         else:
             SIZE += 500 if i % 50 == 0 else 0
-        if sv_type==0 or sv_type==-1:
-            translocate(chromosomes, i)
-        if sv_type==1 or sv_type==-1: 
-            insert(chromosomes)
-        if sv_type==2 or sv_type==-1:
-            delete(chromosomes)
-        if sv_type==3 or sv_type==-1: 
-            invert(chromosomes)
-        if sv_type==4 or sv_type==-1: 
+        if sv_type==1 or sv_type==6:
             duplications(chromosomes)
+        if sv_type==2 or sv_type==6: 
+            delete(chromosomes)
+        if sv_type==3 or sv_type==6:
+            translocate(chromosomes, i)
+        if sv_type==4 or sv_type==6: 
+            insert(chromosomes)
+        if sv_type==5 or sv_type==6: 
+            invert(chromosomes)
