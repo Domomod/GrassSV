@@ -133,6 +133,7 @@ class Scheduler:
         os.makedirs(output, mode = 0o774, exist_ok=True)
         os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
         shutil.copyfile(genome, output+"/genome.fsa")
+        shutil.copyfile(os.path.dirname(genome) + "/genome.lengths", output+"/genome.lengths")
 
         for task in PredefinedTasks:
             if( task.value.Task_UID >= starting_task):
