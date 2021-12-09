@@ -55,7 +55,7 @@ class Chromosome:
 
 
 def load_chroms() -> [Chromosome]:
-    with open("genome.lengths") as file:
+    with open( os.path.dirname(FILE) + "/genome.lengths") as file:
         chrom = [Chromosome(chrom.split("\t")) for chrom in file.read().split("\n")]
     return chrom
 
