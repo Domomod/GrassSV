@@ -159,6 +159,14 @@ if __name__ == '__main__':
         region_num_per_chrom = int(chromosome.length / 15000)
         chromosome.generate_regions_points(region_num_per_chrom, int(point_num / len(chromosomes)) + 2, SIZE)
     much = 500 if sv_type!=-1 else 100
+    regions_sum = 0
+    for chromosome in chromosomes:
+        regions_sum += len(chromosome.regions)
+    if sv_type == 6 and (regions_sum < 4 * much or point_num < 3 * much):
+        raise RuntimeError("Not enough regions or points")
+    elif regions_sum < much or point_num < much:
+        raise RuntimeError("Not enough regions or points")
+
     SIZE = 0
     for i in range(much):
         if sv_type==6:
