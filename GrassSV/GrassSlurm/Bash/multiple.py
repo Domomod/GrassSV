@@ -158,7 +158,7 @@ if __name__ == '__main__':
     for chromosome in chromosomes:
         region_num_per_chrom = int(chromosome.length / 15000)
         chromosome.generate_regions_points(region_num_per_chrom, int(point_num / len(chromosomes)) + 2, SIZE)
-    much = 500 if sv_type!=-1 else 100
+    much = 500 if sv_type!=6 else 100
     regions_sum = 0
     for chromosome in chromosomes:
         regions_sum += len(chromosome.regions)
