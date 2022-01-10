@@ -62,7 +62,7 @@ def find_roi(inputPath, outputPath, maxCoverage, marginSize=150, minSize=1):
         if (len(endings) == lastIteration):
             break
         lastIteration = len(endings)
-    outputFile = open(outputPath, "w")
+    outputFile = open(outputPath, "w+")
     for line in range(0, len(endings), 2):
         outputFile.write(endings[line][0] + "\t" + endings[line][1] + "\t" + endings[line + 1][1] + "\n")
     outputFile.close()
