@@ -1,5 +1,4 @@
 import argparse, argcomplete
-import re
 from enum import Enum
 import operator
 
@@ -15,8 +14,16 @@ class ReadPos(Enum):
     READ_WITHIN = 4
 
 
+def add_subparser(subparsers):
+    fastq_regions = subparsers.add_parser(TEXT, help="Filter reads by regions of interest")
+    fastq_regions.add_argument('-f1', '--fastq1', help="Output file number 1", type=str, required=True)
+    fastq_regions.add_argument('-f2', '--fastq2', help="Output file number 2", type=str, required=True)
+    fastq_regions.add_argument('-s', '--sam', help="Input sam file", type=str, required=True)
+    fastq_regions.add_argument('-roi', '--region-of-interest', help="Input region of interest file", type=str, required=True)
+
+
 def action(args):
-    roi_data_sorted = get_sorted_roi(read_depth_file(args.depth))
+    roi_data_sorted = get_sorted_roi(read_roi_file(args.region_of_interest))
     sam_data = read_sam_file(args.sam)
     sam_data_sorted = sorted(sam_data, key=lambda x: (x.rname, x.pos))
     sam_pairs = {}
@@ -55,7 +62,7 @@ def action(args):
     with open(args.fastq1, 'w') as fastq1_file:
         with open(args.fastq2, 'w') as fastq2_file:
             for second, v in result.items():
-                if (v == True) and (second.rname == sam_pairs[second].rname or second.flag & 12 > 1 or sam_pairs[second].flag & 12 > 1):# and (second in sam_pairs):
+                if (v == True) and (second.rname == sam_pairs[second].rname or second.flag & 12 > 1 or sam_pairs[second].flag & 12 > 1):
                     fastq1_file.write(str(FastqInstance(sam_pairs[second].qname, sam_pairs[second].seq, sam_pairs[second].qual, 1)))
                     fastq2_file.write(str(FastqInstance(second.qname, second.seq, second.qual, 2)))
     
@@ -71,9 +78,9 @@ def get_sorted_roi(data):
     return result
 
 
-def read_depth_file(in_depth: str):
-    with open(in_depth) as depth_file:
-        return [Region(i.split()[1], i.split()[2], i.split()[0]) for i in depth_file.readlines()]
+def read_roi_file(in_roi: str):
+    with open(in_roi) as roi_file:
+        return [Region(i.split()[1], i.split()[2], i.split()[0]) for i in roi_file.readlines()]
 
 
 def read_sam_file(sam_file_name: str):
@@ -92,11 +99,3 @@ def how_is_positioned(sequence, roi):
         return ReadPos.READ_AFTER
     else:
         return ReadPos.READ_BEFORE
-
-
-def add_subparser(subparsers):
-    fastq_regions = subparsers.add_parser(TEXT, help="Filter reads by regions of interest")
-    fastq_regions.add_argument('-f1', '--fastq1', help="Output file number 1", type=str, required=True)
-    fastq_regions.add_argument('-f2', '--fastq2', help="Output file number 2", type=str, required=True)
-    fastq_regions.add_argument('-s', '--sam', help="Input sam file", type=str, required=True)
-    fastq_regions.add_argument('-d', '--depth', help="Input depth file", type=str, required=True)
