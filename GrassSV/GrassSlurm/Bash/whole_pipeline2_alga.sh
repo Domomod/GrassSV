@@ -12,7 +12,7 @@ for coverage in 5 7 10 12
 do
 	for margin in 150 #250 350 450
 	do
-		run_alga.sh ${data}/coverage_${coverage}_${margin}
+		/usr/bin/time -v run_alga.sh ${data}/coverage_${coverage}_${margin} 2> run_alga_${coverage}_${margin}.txt
 	done
 done
 

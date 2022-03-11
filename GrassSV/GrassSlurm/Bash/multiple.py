@@ -154,7 +154,7 @@ if __name__ == '__main__':
     TEMP_FILE= sys.argv[3]
     BED_FILE= sys.argv[4]
     chromosomes = load_chroms()
-    point_num = 200 if sv_type==6 else 500
+    point_num = 300 if sv_type==6 else 500
     for chromosome in chromosomes:
         region_num_per_chrom = int(chromosome.length / 15000)
         chromosome.generate_regions_points(region_num_per_chrom, int(point_num / len(chromosomes)) + 2, SIZE)
