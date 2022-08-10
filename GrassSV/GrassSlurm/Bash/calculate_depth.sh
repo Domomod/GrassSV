@@ -16,11 +16,11 @@ genome=$main_directory/genome/ref.fsa
 index_dir=$main_directory/index
 
 printf "[+] Index ("$main_directory"):\t"
-bowtie2-build $genome $index_dir/index
+/usr/bin/time -o ${mutation_dir}/log/bowtie2_build.time -v bowtie2-build $genome $index_dir/index
 printf "Done\n[+] Bowtie ("$main_directory"):\t"
-bowtie2 -x $index_dir/index -1 $mutation_dir/reads1.fq -2 $mutation_dir/reads2.fq -S $mutation_dir/alignments.sam
+/usr/bin/time -o ${mutation_dir}/log/bowti2.time -v bowtie2 -x $index_dir/index -1 $mutation_dir/reads1.fq -2 $mutation_dir/reads2.fq -S $mutation_dir/alignments.sam
 printf "Done\n[+] Sort ("$main_directory"):\t"
-samtools sort -o $mutation_dir/alignments_sorted.sam $mutation_dir/alignments.sam
+/usr/bin/time -o ${mutation_dir}/log/samtools_sort.time -v samtools sort -o $mutation_dir/alignments_sorted.sam $mutation_dir/alignments.sam
 printf "Done\n[+] Depth ("$main_directory"):\t"
-samtools depth -a $mutation_dir/alignments_sorted.sam > $mutation_dir/depth.coverage
+/usr/bin/time -o ${mutation_dir}/log/samtools_depth.txt -v samtools depth -a $mutation_dir/alignments_sorted.sam > $mutation_dir/depth.coverage
 printf "Done\n"

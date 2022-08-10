@@ -73,7 +73,7 @@ def duplications(chromosomes):
     os.system(comm)
     comm = f"cat {TEMP_FILE} > {FILE}"
     os.system(comm)
-    log("DUP", chromosome.name, region[0][0], region[0][1])
+    log("DUP", chromosome.name, start, end)
 
 
 def insert(chromosomes):
@@ -104,7 +104,7 @@ def delete(chromosomes):
     os.system(comm)
     comm = f"cat {TEMP_FILE} > {FILE}"
     os.system(comm)
-    log("DEL", chromosome.name, region[0][0], region[0][1])
+    log("DEL", chromosome.name, start, end)
 
 
 def invert(chromosomes):
@@ -119,7 +119,7 @@ def invert(chromosomes):
     os.system(comm)
     comm = f"cat {TEMP_FILE} > {FILE}"
     os.system(comm)
-    log("INV", chromosome.name, region[0][0], region[0][1])
+    log("INV", chromosome.name, start, end)
 
 
 def translocate(chromosomes, which):
@@ -138,7 +138,7 @@ def translocate(chromosomes, which):
     os.system(comm)
     comm = f"cat {TEMP_FILE} > {FILE}"
     os.system(comm)
-    log(f"TRANS:FROM{which}", chromosome.name, region[0][0], region[0][1])
+    log(f"TRANS:FROM{which}", chromosome.name, start, end)
     log(f"TRANS:TO{which}", chromosome.name, where_to[0], SIZE)
 
 

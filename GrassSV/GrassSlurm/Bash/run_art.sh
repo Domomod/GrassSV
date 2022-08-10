@@ -5,6 +5,7 @@
 #SBATCH -o log/ART-slurm.out
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=domionato@gmail.com
+#SBATCH --mem=20G
 
 data=$1
 
