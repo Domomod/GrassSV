@@ -23,5 +23,5 @@ Percentiles
 			print(msg)
 #TODO: if output
 
-if __name__ == "__main__":
-	contig_read(sys.argv[1],False,True)
+#if __name__ == "__main__":#
+#	contig_read(sys.argv[1],False,True)

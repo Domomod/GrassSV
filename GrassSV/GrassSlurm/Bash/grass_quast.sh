@@ -6,6 +6,7 @@
 #SBATCH -e grasshopper-slurm.err
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=ksychla5@gmail.com
+#SBATCH --mem=20G
 
 run_grasshopper.sh . grasshopper
 run_quast.sh ./grasshopper quast

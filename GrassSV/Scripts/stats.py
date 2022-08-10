@@ -1,7 +1,12 @@
-from GrassSV.Alignment.alignments import Pattern, do_they_intersect, sort_coords
-from GrassSV.Scripts.load_files import load_prawdziwe, load_grassv_translocation, load_manta, load_grassv, \
-    load_sniffless, load_cnvnator, load_rsvsim_trans, load_rsvsim
-from GrassSV.Alignment.load_csv import load_regular, load_translocation_as_separate_patterns, load_translocation
+#!/usr/bin/python3
+
+import sys
+
+from GrassSV.Alignment.alignments import TranslocationPattern, Pattern, do_they_intersect, sort_coords
+from GrassSV.Alignment.load_bed import load_pattern_bed, load_translocations_bed
+
+#import numpy crashes on eagle for some reason
+#from GrassSV.Alignment.load_csv import load_regular, load_translocation_as_separate_patterns, load_translocation
 
 
 def calculate_single_pair(first, second):
@@ -34,13 +39,7 @@ def calculate_pair_of_translocations(first, second, margin):
 
 def calculate_all_translocations(realtab, simtab, percentage):
     found = 0
-    margin = 0
-    if percentage == 95:
-        margin = 5
-    if percentage == 90:
-        margin = 5
-    if percentage == 80:
-        margin = 10
+    margin = 10
     for real in realtab:
         for simulated in simtab:
             if calculate_pair_of_translocations(real, simulated, margin) >= percentage:
@@ -63,31 +62,34 @@ def calculate_all_insertions(realtab, simtab, margin):
         for simulated in simtab:
             if calculate_insertions(real, simulated, margin):
                 found += 1
-    return str(found) + "/" + str(len(realtab))
+    return str(found) + " / " + str(len(realtab))
 
 
 if __name__ == "__main__":
-    folders = ["dane/ostateczne/", "dane/rsvsim/"]
-    rsvsim = ["deletions.csv", "insertions.csv", "inversions.csv", "tandemDuplications.csv"]
-    ostateczne = ["delicje.bed", "duplikacje.bed", "insertion.bed", "inwersje.bed", "translokacje.bed"]
-    rsvsimtest = ["deletions.bed", "translocations.bed", "filter_inversions.bed", "duplications.bed"]
-    ostatecznetest = ["deletions.bed", "duplications.bed", "insertion.bed", "filter_inversions.bed",
-                      "translocations.bed"]
-    sniff = load_grassv_translocation("dane/rsvsim/translocations.bed")
-    grasss= load_translocation("dane/rsvsim/prawdziwe/insertions.csv")
+    if len(sys.argv) == 3:
+        detected_dir = sys.argv[1]
+        generated_dir = "."
+    if len(sys.argv) >= 2:
+        generated_dir = sys.argv[2]
+    else:
+        print("Not enough arguments")
 
-    print(calculate_all_translocations(grasss, sniff, 90))
-    # for percentage in [95,90,80]:
-    #    for i in range(len(rsvsim)):
-    #        print(rsvsimtest[i])
-    #        dane_path=folders[1]+"prawdziwe/"+rsvsim[i]
-    #        grass_path=folders[1]+"detectedSVs/"+rsvsimtest[i]
-    #        if (rsvsim[i]=="insertions.csv"):
-    #            dane=load_translocation(dane_path)
-    #            grass=load_grassv_translocation(grass_path)
-    #            print(calculate_all_translocations(dane,grass,percentage))
-    #            print(calculate_all_translocations(grass, grass, percentage))
-    #        else:
-    #            dane=load_regular(dane_path)
-    #            grass=load_grassv(grass_path)
-    #            print(calculate_type(dane,grass,percentage))
+    generated_deletions      = load_pattern_bed(f"{generated_dir}/deletions.bed")
+    generated_duplications   = load_pattern_bed(f"{generated_dir}/duplications.bed")
+    generated_insertions     = load_pattern_bed(f"{generated_dir}/insertions.bed")
+    generated_inversions     = load_pattern_bed(f"{generated_dir}/inversions.bed")
+    generated_translocations = load_translocations_bed(f"{generated_dir}/translocations.bed")
+
+    found_deletions      = load_pattern_bed(f"{detected_dir}/deletions.bed")
+    found_duplications   = load_pattern_bed(f"{detected_dir}/duplications.bed")
+    found_insertions     = load_pattern_bed(f"{detected_dir}/insertion.bed")
+    found_inversions     = load_pattern_bed(f"{detected_dir}/filter_inversions.bed")
+    found_translocations = load_translocations_bed(f"{detected_dir}/translocations.bed")
+
+    print(f"""### GRASS-SV STATS [Found / Generated] - margin 95
+    Deletions : {   calculate_type(generated_deletions     , found_deletions    , 95)}
+    Duplications : {calculate_type(generated_duplications  , found_duplications , 80)}
+    Insertions : {  calculate_all_insertions(generated_insertions    , found_insertions   , 10)}
+    Inversions : {  calculate_type(generated_inversions    , found_inversions   , 95)}
+    Translocations : {calculate_all_translocations(generated_translocations, found_translocations, 80)}
+    """)

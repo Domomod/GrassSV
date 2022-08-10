@@ -1,5 +1,5 @@
 import argparse, argcomplete
-from GrassSV.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, filter_reads, slurm_dispatch, find_hdr
+from GrassSV.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, filter_reads, slurm_dispatch, find_hdr, run_standalone
 
 
 def run():
@@ -15,6 +15,7 @@ def run():
     filter_reads.add_subparser(subparsers)
     slurm_dispatch.add_subparser(subparsers)
     find_hdr.add_subparser(subparsers)
+    run_standalone.add_subparser(subparsers)
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
@@ -35,3 +36,5 @@ def run():
         slurm_dispatch.action(args)
     elif args.action == find_hdr.TEXT:
         find_hdr.action(args)
+    elif args.action == run_standalone.TEXT:
+        run_standalone.action(args)

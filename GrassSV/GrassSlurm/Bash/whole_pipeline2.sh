@@ -6,6 +6,7 @@
 #SBATCH -e grassSV.log
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=dwitczak@gmail.com
+#SBATCH --mem=20G
 
 module load gcc/7.4.0
 module load bowtie/1.0.0
@@ -19,7 +20,7 @@ for coverage in 5 7 10 12
 do
 	for margin in 150 #250 350 450
 	do
-		/usr/bin/time -v run_grasshopper.sh ${data}/coverage_${coverage}_${margin} grasshopper 2> run_grasshopper_$coverage_${margin}.txt
-	done
+		/usr/bin/time -o ${data}/coverage_${coverage}_${margin}/log/run_grasshopper.time -v run_grasshopper.sh ${data}/coverage_${coverage}_${margin} grasshopper 
+        done
 done
 
