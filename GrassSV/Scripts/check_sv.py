@@ -64,15 +64,7 @@ def calculate_all_insertions(realtab, simtab, margin):
                 found += 1
     return str(found) + " / " + str(len(realtab))
 
-
-if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        detected_dir = sys.argv[1]
-        generated_dir = "."
-    if len(sys.argv) >= 2:
-        generated_dir = sys.argv[2]
-    else:
-        print("Not enough arguments")
+def check_sv(generated_dir, detected_dir):
 
     generated_deletions      = load_pattern_bed(f"{generated_dir}/deletions.bed")
     generated_duplications   = load_pattern_bed(f"{generated_dir}/duplications.bed")
