@@ -1,5 +1,17 @@
 #!/bin/bash 
 
+RED='\033[0;31m'
+B_RED='\033[1;31m'
+
+GRN='\033[0;32m'
+B_GRN='\033[1;32m'
+
+
+YELLOW='\033[0;33m'
+LCY='\033[1;36m' # Light Cyan
+
+NC='\033[0m' # No Color
+
 Help()
 {
    # Display Help
@@ -56,7 +68,7 @@ done
 #Input: coverage margin 
 #For GMP server
 #: "${work_dir:=out_${GMPTOOLS_USER}_${GMPTOOLS_JOB}}"; export work_dir
-: "${work_dir:=out_}"                                ; export work_dir
+: "${work_dir:=.}"                                   ; export work_dir
 : "${coverage:=10}"                                  ; export coverage
 : "${margin:=150}"                                   ; export margin
 : ${genome}                                          ; export genome
@@ -83,7 +95,7 @@ export results=${work_dir}/results
 
 mkdir -p $work_dir
 mkdir -p $(dirname ${contigs})
-mkdir -p quast_out
+mkdir -p ${quast_out}
 
 printf "Input parameters coverage: ${coverage}margin: ${margin}" > ${work_dir}/README.txt 
 env > ${work_dir}/env.txt
@@ -91,17 +103,17 @@ env > ${work_dir}/env.txt
 #Use bash tasks relative to run_standalone.sh
 scriptDir=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")/Bash
 
-echo "[+] calculate_depth:"
+echo "${LCY}[+] calculate_depth:${NC}"
 $scriptDir/calculate_depth.sh
-echo "[+] find_roi:"
+echo "${LCY}[+] find_roi:${NC}"
 GrassSV.py find_roi ${coverage_file} ${roi} ${coverage} -m ${margin}
-echo "[+] fastq_regions:"
+echo "${LCY}[+] fastq_regions:${NC}"
 GrassSV.py filter_reads -f1 ${filtered_reads1} -f2 ${filtered_reads2} -s ${alignments_file} -roi ${roi}
-echo "[+] Alga:"
+echo "${LCY}[+] Alga:${NC}"
 $scriptDir/run_alga.sh
-echo "[+] Quast:"
+echo "${LCY}[+] Quast:${NC}"
 $scriptDir/run_quast.sh
-echo "[+] find_sv:"
+echo "${LCY}[+] find_sv:${NC}"
 GrassSV.py find_sv ${quast_alignments} -o ${results}
-echo "[+] find_hdr:"
+echo "${LCY}[+] find_hdr:${NC}"
 GrassSV.py find_hdr ${coverage_file} ${results}/duplications.bed 

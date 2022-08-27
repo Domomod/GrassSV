@@ -31,21 +31,21 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
 
     #Raport
-    export_records(insertions, f"{output_folder_path}/detectedSVs/insertion.bed")
-    export_records(inversions_filtered, f"{output_folder_path}/detectedSVs/filter_inversions.bed")
+    export_records(insertions, f"{output_folder_path}/detectedSVs/insertions.bed")
+    export_records(inversions_filtered, f"{output_folder_path}/detectedSVs/inversions.bed")
     export_records(deletions, f"{output_folder_path}/detectedSVs/deletions.bed")
     #export_records(duplications, f"{output_folder_path}/detectedSVs/duplications.bed")
     export_records(translocations, f"{output_folder_path}/detectedSVs/translocations.bed")
 
     #For debug
-    if export_support:
+    if True or export_support:
         export_supporting_alignments(insertions, f"{output_folder_path}/supportForSVs/insertions_support.bed")
         export_supporting_alignments(inversions_filtered, f"{output_folder_path}/supportForSVs/inversions_support.bed")
         export_supporting_alignments(deletions, f"{output_folder_path}/supportForSVs/deletions_support.bed")
         #export_supporting_alignments(duplications, f"{output_folder_path}/supportForSVs/duplications_support.bed")
         export_supporting_alignments(translocations, f"{output_folder_path}/supportForSVs/translocations_support.bed")
 
-    if export_patterns:
+    if True or  export_patterns:
         export_records(contig_patterns.potential_duplications, f"{output_folder_path}/patterns/duplication_patterns.bed")
         export_records(contig_patterns.deletions, f"{output_folder_path}/patterns/deletion_patterns.bed")
         export_records(contig_patterns.inversions, f"{output_folder_path}/patterns/inversion_patterns.bed")
