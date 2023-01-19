@@ -19,16 +19,23 @@ def add_subparser(subparsers):
     fastq_regions.add_argument('-f1', '--fastq1', help="Output file number 1", type=str, required=True)
     fastq_regions.add_argument('-f2', '--fastq2', help="Output file number 2", type=str, required=True)
     fastq_regions.add_argument('-s', '--sam', help="Input sam file", type=str, required=True)
+    fastq_regions.add_argument('-ss', '--sam-sorted', help="Input sam file (sorted)", type=str, required=True)
     fastq_regions.add_argument('-roi', '--region-of-interest', help="Input region of interest file", type=str, required=True)
 
 
 def action(args):
+    print(f"Reading data")
     roi_data_sorted = get_sorted_roi(read_roi_file(args.region_of_interest))
     sam_data = read_sam_file(args.sam)
-    sam_data_sorted = sorted(sam_data, key=lambda x: (x.rname, x.pos))
+    sam_data_sorted = read_sam_file(args.sam_sorted) #sorted(sam_data, key=lambda x: (x.rname, x.pos))
     sam_pairs = {}
     result = {}
 
+    print(f"Stats")
+    print(f"Roi keys: {roi_data_sorted.keys()}" )
+    print(f"Sam size: {len(sam_data_sorted)}")
+
+    print(f"Sorting data")
     for it in range(0, len(sam_data), 2):
         sam_pairs[sam_data[it]] = sam_data[it+1]
         sam_pairs[sam_data[it+1]] = sam_data[it]
@@ -36,29 +43,48 @@ def action(args):
 
     sam_data = []
 
+    print(f"Processing aligments")
     pos_it = 0
     prev_chrom = "*"
     for record in sam_data_sorted:
-        if record.flag & 12 > 1:
+        if record.flag & 0b1100 > 1:
             if record in result.keys():
+                print(f"result {record} in result.keys()")
                 result[record] = True
             elif record in sam_pairs:
+                print(f"result {record} in sam_pairs")
                 result[sam_pairs[record]] = True
             continue
 
         if record.rname != prev_chrom:
             pos_it = 0
 
-        while how_is_positioned(record, roi_data_sorted[record.rname][pos_it]) == ReadPos.READ_BEFORE:
-            pos_it += 1
+        if record.rname not in roi_data_sorted:
+            print(f"[INFO] There is no '{record.rname}' in roi dictionary")
+            continue #There is no roi for this chromosome
 
-        if how_is_positioned(record, roi_data_sorted[record.rname][pos_it]) == ReadPos.READ_WITHIN:
+        #this is for debugging atm, remove later and call directly
+        temp=roi_data_sorted[record.rname]
+
+        while how_is_positioned(record, temp[pos_it]) == ReadPos.READ_BEFORE:
+            if pos_it + 1 >= len(temp): #This covers case when there are still reads that are positioned before last roi in current chromosome 
+                break
+            pos_it += 1
+            print(f"roi( {temp[pos_it].to_str()} ) || sam ( {record} )")
+            print(f"record.rname( {record.rname} ) pos_it( {pos_it} )")
+        
+
+        if how_is_positioned(record, temp[pos_it]) == ReadPos.READ_WITHIN:
             if record in result.keys():
                 result[record] = True
             elif record in sam_pairs:
                 result[sam_pairs[record]] = True
         prev_chrom = record.rname
 
+    print(f"result size {len(result)}")
+
+
+    print(f"Filtering reads")
     with open(args.fastq1, 'w') as fastq1_file:
         with open(args.fastq2, 'w') as fastq2_file:
             for second, v in result.items():
@@ -73,8 +99,9 @@ def get_sorted_roi(data):
         if region.name not in result.keys():
             result[region.name] = []
         result[region.name].append(region)
+    # roi should already be sorted
     for chromosome_name in result.keys():
-        result[chromosome_name] = sorted(result[chromosome_name], key=operator.attrgetter('start'))
+       result[chromosome_name] = sorted(result[chromosome_name], key=operator.attrgetter('start'))
     return result
 
 
