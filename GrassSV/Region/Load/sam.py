@@ -19,3 +19,20 @@ class SamInstance:
 
     def __repr__(self):
         return self.__str__()
+
+    def __eq__(self, other):
+        return ( self.qname  == other.qname  and
+                 self.flag   == other.flag   and
+                 self.rname  == other.rname  and
+                 self.pos    == other.pos    and
+                 self.mapq   == other.mapq   and
+                 self.cigar  == other.cigar  and
+                 self.rnext  == other.rnext  and
+                 self.pnext  == other.pnext  and
+                 self.tlen   == other.tlen   and
+                 self.seq    == other.seq    and
+                 self.qual   == other.qual   )
+
+    def __hash__(self):
+        return hash((self.qname, self.flag, self.rname, self.pos, self.mapq,
+                self.cigar, self.rnext, self.pnext, self.tlen, self.seq, self.qual))

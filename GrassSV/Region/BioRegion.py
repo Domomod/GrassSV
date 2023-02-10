@@ -146,6 +146,12 @@ class Region(RegionComponent):
         self.length = abs(self.start - self.end)
         self.ref = ref
 
+    def __eq__(self, other):
+        return self.start == other.start and self.end == other.end and self.ref == other.ref and self.length == other.length
+
+    def __hash__(self):
+        return hash((self.start, self.end, self.length, self.ref))
+
     def intersects(self, other, minimal_intersection = 0.0):
         """
         Detects intersection between a Region object and a RegionComponent object.

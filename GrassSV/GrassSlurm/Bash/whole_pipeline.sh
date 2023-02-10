@@ -5,7 +5,7 @@
 #SBATCH -e grassSV.log
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=domionato@gmail.com
-#SBATCH --mem=20G
+#SBATCH --mem=80G
 
 data=${1:=.}
 for coverage in 5 7 10 12

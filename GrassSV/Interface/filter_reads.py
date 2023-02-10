@@ -60,7 +60,7 @@ def action(args):
             pos_it = 0
 
         if record.rname not in roi_data_sorted:
-            print(f"[INFO] There is no '{record.rname}' in roi dictionary")
+            #print(f"[INFO] There is no '{record.rname}' in roi dictionary")
             continue #There is no roi for this chromosome
 
         #this is for debugging atm, remove later and call directly
@@ -70,14 +70,17 @@ def action(args):
             if pos_it + 1 >= len(temp): #This covers case when there are still reads that are positioned before last roi in current chromosome 
                 break
             pos_it += 1
-            print(f"roi( {temp[pos_it].to_str()} ) || sam ( {record} )")
-            print(f"record.rname( {record.rname} ) pos_it( {pos_it} )")
+            #print(f"roi( {temp[pos_it].to_str()} ) || sam ( {record} )")
+            #print(f"record.rname( {record.rname} ) pos_it( {pos_it} )")
         
 
         if how_is_positioned(record, temp[pos_it]) == ReadPos.READ_WITHIN:
+            print(f"READ WITHIN !!!!!!!!!!!!!!!!!!!!!!")
             if record in result.keys():
+                print(f"RECORD !!!!!!!!!!!!!!!!!!!!!!")
                 result[record] = True
             elif record in sam_pairs:
+                print(f"SECOND RECORD !!!!!!!!!!!!!!!!!!!!!!")
                 result[sam_pairs[record]] = True
         prev_chrom = record.rname
 
@@ -85,10 +88,27 @@ def action(args):
 
 
     print(f"Filtering reads")
+
+    print(f"dupa")
+
     with open(args.fastq1, 'w') as fastq1_file:
+        print(f"blada")
+
         with open(args.fastq2, 'w') as fastq2_file:
-            for second, v in result.items():
-                if (v == True) and (second.rname == sam_pairs[second].rname or second.flag & 12 > 1 or sam_pairs[second].flag & 12 > 1):
+            print(f"sina")
+            
+            for second, is_marked_for_export in result.items():
+                print(f"rada")
+
+                same_chromosome = (second.rname == sam_pairs[second].rname)
+                one_or_the_other_unmapped = (second.flag & 12 > 1 or sam_pairs[second].flag & 12 > 1)
+                if is_marked_for_export:
+                    print(f"{second}\nis_marked_for_export={is_marked_for_export}")
+                    print(f"same_chromosome={same_chromosome}")
+                    print(f"one_or_other_unmapped={one_or_the_other_unmapped}")
+                    print(f"overall={(is_marked_for_export) and ( same_chromosome or one_or_the_other_unmapped)}")
+
+                if (is_marked_for_export) and ( same_chromosome or one_or_the_other_unmapped):
                     fastq1_file.write(str(FastqInstance(sam_pairs[second].qname, sam_pairs[second].seq, sam_pairs[second].qual, 1)))
                     fastq2_file.write(str(FastqInstance(second.qname, second.seq, second.qual, 2)))
     

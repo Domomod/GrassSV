@@ -132,11 +132,13 @@ class Scheduler:
     def schedule_tasks(output : str, genome : str,  starting_task : Task_UID , genMut : GenMutEnums):
         os.makedirs(output, mode = 0o774, exist_ok=True)
         os.makedirs(output+"/log", mode = 0o774, exist_ok=True)
-        shutil.copyfile(genome, output+"/genome.fsa")
-        shutil.copyfile(os.path.dirname(genome) + "/genome.lengths", output+"/genome.lengths")
 
         for task in PredefinedTasks:
             if( task.value.Task_UID >= starting_task):
+                if( task.value.Task_UID == PredefinedTasks.GEN_MUTATION):
+                    #Create a copy of genome.fsa to host the generated mutations
+                    shutil.copyfile(genome, output+"/genome.fsa")
+                    shutil.copyfile(os.path.dirname(genome) + "/genome.lengths", output+"/genome.lengths")
                 #if( not((task == PredefinedTasks.GEN_MUTATION or task == PredefinedTasks.RUN_ART) and genMut == GenMutEnums.NONE) ):
                 success = Scheduler.run_task_cmd(task.value, output, genMut.value)
                 if success != 0: 

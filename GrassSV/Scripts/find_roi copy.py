@@ -22,22 +22,22 @@ class depthFileParser():
                 f"[ValueError] parseDepthLine(): expected a line consisting of 3 words. Recieved '{line}' instead."
             )
 
-    def find_roi(self, depthCoverageFile, outputFile, maxCoverage, marginSize=150, minSize=1):
-        self.outputFile = outputFile
+    def find_roi(self, inputPath, outputPath, maxCoverage, marginSize=150, minSize=1):
         self.margin_size = marginSize
         self.minSize = minSize
         prevChromosome, prevPosition, prevDepth = None, None, None 
-        for line in depthCoverageFile:
-            chromosome, position, depth = self.parseDepthLine(line)
-            if (    depth < maxCoverage
-                and self.current_roi == None
-                ):
-                self.current_roi = region_of_interest(chromosome, position)
-            elif    depth < maxCoverage:
-                self.add_to_roi(chromosome, position)
-            prevChromosome, prevPosition, prevDepth = chromosome, position, depth
+        with open(inputPath, "r") as depthCoverageFile:
+            for line in depthCoverageFile:
+                chromosome, position, depth = self.parseDepthLine(line)
+                if (    depth < maxCoverage
+                    and self.current_roi == None
+                    ):
+                    self.current_roi = region_of_interest(chromosome, position)
+                elif    depth < maxCoverage:
+                    self.add_to_roi(chromosome, position)
+                prevChromosome, prevPosition, prevDepth = chromosome, position, depth
         if self.current_roi != None:
-            self.save_current_roi()
+            self.save_self.current_roi()
 
     def add_to_roi(self, chromosome, position):
         if (    self.current_roi.chromosome == chromosome 
@@ -64,10 +64,13 @@ class depthFileParser():
             # We allow this, because we only need those coordinates to later check if a read
             # overlaps with a reported region of interest. 
             end_margin_applied = self.current_roi.end + self.margin_size
-            self.outputFile.write(f"{self.current_roi.chromosome}\t{self.current_roi.start}\t{self.current_roi.end}\n")
+            outputFile.write(f"{self.current_roi.chromosome}\t{self.current_roi.start}\t{self.current_roi.end}\n")
             self.current_roi = None
 
 def run(input_path, output_path, limit_coverage, margin_size, minimum_size):
-    with open(output_path, "w+") as outputFile, open(input_path, "r") as inputFile:
+    with (  open(output_file, "w+") as outputFile,
+            open(inputPath, "r") as inputFile
+         ):
          dfParser = depthFileParser()
          dfParser.find_roi(inputFile, outputFile, limit_coverage, margin_size, minimum_size)
+

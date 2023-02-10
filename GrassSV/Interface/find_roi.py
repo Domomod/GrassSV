@@ -15,5 +15,5 @@ def add_subparser(subparsers):
 
 
 def action(args):
-    find_roi.run(input_file=args.input, output_file=args.output, limit_coverage=args.limit, minimum_size=args.size,
+    find_roi.run(input_path=args.input, output_path=args.output, limit_coverage=args.limit, minimum_size=args.size,
                  margin_size=args.margin_size)
