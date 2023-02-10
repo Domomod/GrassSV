@@ -1,12 +1,12 @@
 import argparse, argcomplete, textwrap
 
-from GrassSV.Scripts import csv2bed, check_sv
+from GrassSV.Scripts import csv2bed, check_sv, check_breakpoint
 
 TEXT = 'utils'
 
 CSV2BED = "csv2bed"
 CHECK_SV = "check_sv"
-
+CHECH_SV_BR = "check_sv_br"
 
 def add_subparser(subparsers):
     utils = subparsers.add_parser(TEXT, help='Utilities [csv2bed, sv_check]',
@@ -38,12 +38,27 @@ def add_subparser(subparsers):
                                                     "   translocations.bed\n"
                                                     "\033[0m")
     check_sv.add_argument('-g', '--generated', type=str, metavar='path', help='Path to directory containing generated/known mutations', required=True)
-    check_sv.add_argument('-d', '--detected', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
+    check_sv.add_argument('-d', '--detected', type=str, metavar='path', help='Path to directory containing detected mutations', required=True)
+    check_sv.add_argument('-b', '--bp_mode', help='Alternative mode: Loads only breakpoints.bed from direcotry/', action='store_true')
+
+    check_sv_br = utils_subparer.add_parser(CHECH_SV_BR, 
+                                        formatter_class=argparse.RawTextHelpFormatter,
+                                        help="Compare two files with structural variations in breakpoint format",
+                                        description="\033[1;36m"
+                                                    "Checks how many breakpoints from [-g] input files can be also found in [-d] input files.\n"
+                                                    "The generated breakpoints may be manualy enlarged on both sizes, to allow for a margin of error. \n"
+                                                    "\033[0m")
+    check_sv_br.add_argument('-g', '--generated', type=str, metavar='path', help='Path to directory containing generated/known mutations', required=True)
+    check_sv_br.add_argument('-d', '--detected', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
+
 
 def action(args):
     if args.utils_action == CSV2BED:
         csv2bed.export_to_bed(input_path= args.vcf, output_path = args.bed)
         pass
     elif args.utils_action == CHECK_SV:
-        check_sv.check_sv(detected_dir = args.detected, generated_dir = args.generated )
+        check_sv.check_sv(detected_dir = args.detected, generated_dir = args.generated, only_breakpoints=args.bp_mode )
+        pass
+    elif args.utils_action == CHECH_SV_BR:
+        check_breakpoint.check_sv(detected_dir = args.detected, generated_dir = args.generated )
         pass

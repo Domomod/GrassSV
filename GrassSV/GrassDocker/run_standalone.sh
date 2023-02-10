@@ -50,13 +50,10 @@ while getopts 'g:l:i:r:R:h' OPTION; do
   esac
 done
 
-
-
-
 #Input: coverage margin 
 #For GMP server
 #: "${work_dir:=out_${GMPTOOLS_USER}_${GMPTOOLS_JOB}}"; export work_dir
-: "${work_dir:=out_}"                                ; export work_dir
+: "${work_dir:=.}"                                ; export work_dir
 : "${coverage:=10}"                                  ; export coverage
 : "${margin:=150}"                                   ; export margin
 : ${genome}                                          ; export genome
@@ -66,10 +63,15 @@ done
 : ${reads2}                                          ; export reads2
 
 
+#Can be overwritten by variables exported by the caller
+: ${alignments_file:=${work_dir}/alignments.sam}          ; export alignments_file
+: ${alignments_sorted:=${work_dir}/alignments_sorted.sam} ; export alignments_sorted
+: ${coverage_file:=${work_dir}/depth.coverage}            ; export coverage_file
 
-export alignments_file=${work_dir}/alignments.sam
-export alignments_sorted=${work_dir}/alignments_sorted.sam
-export coverage_file=${work_dir}/depth.coverage
+free -h
+echo "Coverage: ${coverage}"
+echo "Margin: ${margin}"
+
 export roi=${work_dir}/regions_of_interest.bed
 export filtered_reads1=${work_dir}/filtered_reads_C1.fastq
 export filtered_reads2=${work_dir}/filtered_reads_C2.fastq
@@ -91,17 +93,21 @@ env > ${work_dir}/env.txt
 #Use bash tasks relative to run_standalone.sh
 scriptDir=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")/Bash
 
-echo "[+] calculate_depth:"
-$scriptDir/calculate_depth.sh
-echo "[+] find_roi:"
-GrassSV.py find_roi ${coverage_file} ${roi} ${coverage} -m ${margin}
+# Comment out when not using SLURM
+module load python/3.9.2
+echo $PATH > path.txt
+
+# echo "[+] calculate_depth:"
+# $scriptDir/calculate_depth.sh
+# echo "[+] find_roi:"
+# GrassSV.py find_roi ${coverage_file} ${roi} ${coverage} -m ${margin} > ${work_dir}/find_roi.txt
 echo "[+] fastq_regions:"
-GrassSV.py filter_reads -f1 ${filtered_reads1} -f2 ${filtered_reads2} -s ${alignments_file} -roi ${roi}
-echo "[+] Alga:"
-$scriptDir/run_alga.sh
-echo "[+] Quast:"
-$scriptDir/run_quast.sh
-echo "[+] find_sv:"
-GrassSV.py find_sv ${quast_alignments} -o ${results}
-echo "[+] find_hdr:"
-GrassSV.py find_hdr ${coverage_file} ${results}/duplications.bed 
+GrassSV.py filter_reads -f1 ${filtered_reads1} -f2 ${filtered_reads2} -s ${alignments_file} -ss ${alignments_sorted} -roi ${roi} > ${work_dir}/filter_reads.txt
+# echo "[+] Alga:"
+# $scriptDir/run_alga.sh > ${work_dir}/run_alga.txt
+# echo "[+] Quast:"
+# $scriptDir/run_quast.sh > ${work_dir}/run_quast.txt
+# echo "[+] find_sv:"
+# GrassSV.py find_sv ${quast_alignments} -o ${results} > ${work_dir}/find_sv.txt
+# echo "[+] find_hdr:"
+# GrassSV.py find_hdr ${coverage_file} ${results}/duplications.bed  > ${work_dir}/find_hdr.txt

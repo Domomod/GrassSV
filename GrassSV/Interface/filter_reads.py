@@ -64,42 +64,29 @@ def action(args):
             continue #There is no roi for this chromosome
 
         #this is for debugging atm, remove later and call directly
-        temp=roi_data_sorted[record.rname]
+        roi_on_current_chromosome=roi_data_sorted[record.rname]
 
-        while how_is_positioned(record, temp[pos_it]) == ReadPos.READ_BEFORE:
-            if pos_it + 1 >= len(temp): #This covers case when there are still reads that are positioned before last roi in current chromosome 
+        while how_is_positioned(record, roi_on_current_chromosome[pos_it]) == ReadPos.READ_BEFORE:
+            if pos_it + 1 >= len(roi_on_current_chromosome): #This covers case when there are still reads that are positioned before last roi in current chromosome 
                 break
             pos_it += 1
-            #print(f"roi( {temp[pos_it].to_str()} ) || sam ( {record} )")
+            #print(f"roi( {roi_on_current_chromosome[pos_it].to_str()} ) || sam ( {record} )")
             #print(f"record.rname( {record.rname} ) pos_it( {pos_it} )")
         
 
-        if how_is_positioned(record, temp[pos_it]) == ReadPos.READ_WITHIN:
-            print(f"READ WITHIN !!!!!!!!!!!!!!!!!!!!!!")
+        if how_is_positioned(record, roi_on_current_chromosome[pos_it]) == ReadPos.READ_WITHIN:
             if record in result.keys():
-                print(f"RECORD !!!!!!!!!!!!!!!!!!!!!!")
                 result[record] = True
             elif record in sam_pairs:
-                print(f"SECOND RECORD !!!!!!!!!!!!!!!!!!!!!!")
                 result[sam_pairs[record]] = True
         prev_chrom = record.rname
-
     print(f"result size {len(result)}")
 
 
     print(f"Filtering reads")
-
-    print(f"dupa")
-
     with open(args.fastq1, 'w') as fastq1_file:
-        print(f"blada")
-
         with open(args.fastq2, 'w') as fastq2_file:
-            print(f"sina")
-            
             for second, is_marked_for_export in result.items():
-                print(f"rada")
-
                 same_chromosome = (second.rname == sam_pairs[second].rname)
                 one_or_the_other_unmapped = (second.flag & 12 > 1 or sam_pairs[second].flag & 12 > 1)
                 if is_marked_for_export:

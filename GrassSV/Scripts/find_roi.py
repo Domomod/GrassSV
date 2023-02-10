@@ -55,17 +55,14 @@ class depthFileParser():
             self.current_roi = region_of_interest(chromosome, position)
 
     def save_current_roi(self):
-        # The reported region of interest should be at least the size of `minSize` before extending by `marginSize`
-        if (    (self.current_roi.end - self.current_roi.start) <= self.minSize
-            ):
-            start_margin_applied = max(0, self.current_roi.start - self.margin_size)
+        start_margin_applied = max(0, self.current_roi.start - self.margin_size)
 
-            # The reported end coordinate may extend after the true end of the chromosome
-            # We allow this, because we only need those coordinates to later check if a read
-            # overlaps with a reported region of interest. 
-            end_margin_applied = self.current_roi.end + self.margin_size
-            self.outputFile.write(f"{self.current_roi.chromosome}\t{self.current_roi.start}\t{self.current_roi.end}\n")
-            self.current_roi = None
+        # The reported end coordinate may extend after the true end of the chromosome
+        # We allow this, because we only need those coordinates to later check if a read
+        # overlaps with a reported region of interest. 
+        end_margin_applied = self.current_roi.end + self.margin_size
+        self.outputFile.write(f"{self.current_roi.chromosome}\t{start_margin_applied}\t{end_margin_applied}\n")
+        self.current_roi = None
 
 def run(input_path, output_path, limit_coverage, margin_size, minimum_size):
     with open(output_path, "w+") as outputFile, open(input_path, "r") as inputFile:
