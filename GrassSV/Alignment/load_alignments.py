@@ -25,7 +25,9 @@ def load_alignments(path):
         line = line.split("\t")
         if (line[0].isnumeric()):
             alignment = Alignment(
-                    chromosome = correct_ref_name(line[4]),
+                    #Legacy - was used for yeast genomes with complex chr names
+                    #chromosome = correct_ref_name(line[4]),
+                    chromosome = line[4],
                     alignment_start = int(line[0]),
                     alignment_end = int(line[1]),
                     contig_start = int(line[2]),

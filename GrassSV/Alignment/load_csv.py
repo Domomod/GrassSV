@@ -17,8 +17,11 @@ def load_regular(path):
     patterns = []
     data = pandas.read_csv(path, sep='\t')
     for idx, row in data.iterrows():
-        chromosome = row['Chr'].split(' ', 1)[0]
-        chromosome = correct_ref_name(chromosome)
+        #Legacy - was used for yeast genomes with complex chr names
+        #chromosome = row['Chr'].split(' ', 1)[0]
+        #chromosome = correct_ref_name(chromosome)
+        chromosome = row['Chr']
+
         start = row['Start']
         end = row['End']
         region_name = row['Name']
