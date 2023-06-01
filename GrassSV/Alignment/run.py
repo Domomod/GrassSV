@@ -31,7 +31,8 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
 
     #Raport
-    export_records(insertions, f"{output_folder_path}/detectedSVs/insertions.bed")
+    export_records(contig_insertions, f"{output_folder_path}/detectedSVs/insertions.bed")
+    export_records(alignment_insertions, f"{output_folder_path}/detectedSVs/insertions_low_confidence.bed")
     export_records(inversions_filtered, f"{output_folder_path}/detectedSVs/inversions.bed")
     export_records(deletions, f"{output_folder_path}/detectedSVs/deletions.bed")
     #export_records(duplications, f"{output_folder_path}/detectedSVs/duplications.bed")
@@ -39,7 +40,8 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
     #For debug
     if True or export_support:
-        export_supporting_alignments(insertions, f"{output_folder_path}/supportForSVs/insertions_support.bed")
+        export_supporting_alignments(contig_insertions, f"{output_folder_path}/supportForSVs/insertions_support.bed")
+        export_supporting_alignments(alignment_insertions, f"{output_folder_path}/supportForSVs/insertions_low_confidence_support.bed")
         export_supporting_alignments(inversions_filtered, f"{output_folder_path}/supportForSVs/inversions_support.bed")
         export_supporting_alignments(deletions, f"{output_folder_path}/supportForSVs/deletions_support.bed")
         #export_supporting_alignments(duplications, f"{output_folder_path}/supportForSVs/duplications_support.bed")
