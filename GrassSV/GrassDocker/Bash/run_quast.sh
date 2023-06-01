@@ -6,10 +6,10 @@
 #SBATCH --mail-user=ksychla5@gmail.com
 
 #quast=/home/wojtek/tools/quast-5.0.2/quast.py
-#quast=/home/plgrid-groups/plggillumina/plgDominikKrzysztofJulia/tools/quast-5.0.2/quast.py
-quast=quast.py
+quast=/home/users-groups/grant_452/grassSV_workdir/tools/quast-5.0.2/quast.py
+#quast=quast.py
 
 mkdir -p ${quast_out}
 #poprzednio -m 200 -i 65
-$quast ${contigs} -r ${genome} -m 250 -o ${quast_out}
+$quast ${contigs_with_alga_sufix} -r ${genome} -m 250 -o ${quast_out}
 printf "Done\n"
