@@ -207,7 +207,9 @@ def check_sv(generated_dir, detected_dir, only_breakpoints):
         bp_mode(generated_dir, detected_dir)
         return 0
 
-    generated_deletions      = load_if_exists(f"{generated_dir}/deletions.bed", load_pattern_bed)
+    print(f"Loading ground truth ...")
+    generated_deletions      = load_if_exists(f"{generated_dir}/benchmark_large_sv_10kbp.bed", load_pattern_bed)
+    #generated_deletions      = load_if_exists(f"{generated_dir}/deletions.bed", load_pattern_bed)
     generated_insertions     = load_if_exists(f"{generated_dir}/insertions.bed", load_pattern_bed)
     generated_inversions     = load_if_exists(f"{generated_dir}/inversions.bed", load_pattern_bed)
     generated_translocations = load_if_exists(f"{generated_dir}/translocations.bed", load_translocations_bed)
@@ -217,6 +219,7 @@ def check_sv(generated_dir, detected_dir, only_breakpoints):
     generated_translocations_f = load_if_exists(f"{generated_dir}/translocations.from.bed", load_pattern_bed)
     generated_translocations_t = load_if_exists(f"{generated_dir}/translocations.to.bed", load_pattern_bed)
 
+    print(f"Loading variant calls ...")
     found_deletions      = load_if_exists(f"{detected_dir}/deletions.bed",      load_pattern_bed)
     found_insertions     = load_if_exists(f"{detected_dir}/insertions.bed",     load_pattern_bed)
     found_inversions     = load_if_exists(f"{detected_dir}/inversions.bed",     load_pattern_bed)

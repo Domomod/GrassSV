@@ -102,13 +102,6 @@ echo $PATH > path.txt
 # Declare an array to store job IDs
 declare -a fastq_regions_jobids
 
-# Find roi
-# find_roi_cmd=$(cat <<-EOF
-#     GrassSV.py find_roi ${coverage_file} ${roi} ${coverage} -m ${margin} > ${work_dir}/find_roi.txt
-# EOF
-# )
-
-# find_roi_jobid=$(sbatch --time=48:00:00 --mail-type=ALL --mail-user=dominik.piotr.witczak@gmail.com --mem=200GB -n 1 --output=./log/find_roi.out --wrap "$find_roi_cmd" | awk '{print $NF}')
 
 #!/bin/bash
 
@@ -179,6 +172,7 @@ submit_job() {
 }
 
 # Define the necessary job ID variables
+find_roi_jobid=""
 batch_sort_jobid=""
 fastq_regions_jobid=""
 fastq_regions_jobids=()
@@ -188,17 +182,25 @@ quast_jobid=""
 find_sv_jobid=""
 find_hdr_jobid=""
 
-# for read_num in aa ab ac ad ae af ag; do
-#     alignments_file="./alignments_${read_num}.sam"
-#     sorted_alignments_file="./alignments_sorted_${read_num}.sam"
-#     filtered_reads1_file="${work_dir}/filtered_reads1_${read_num}.fastq"
-#     filtered_reads2_file="${work_dir}/filtered_reads2_${read_num}.fastq"
+# Find roi
+find_roi_cmd=$(cat <<-EOF
+    /usr/bin/time -v -o ${work_dir}/find_roi.time GrassSV.py find_roi ${coverage_file} ${roi} ${coverage} -m ${margin} > ${work_dir}/find_roi.txt
+EOF
+)
 
-#     # module load bowtie2/2.2.3
-#     # bowtie2 -x ${index} -1 reads1_part_${read_num}.fq -2 reads2_part_${read_num}.fq -S ${alignments_file}
+submit_job --job-name="find_roi" --cmd="$find_roi_cmd" --job_id_out=find_roi_jobid
+
+for read_num in aa ab ac ad ae af ag; do
+    alignments_file="./alignments_${read_num}.sam"
+    sorted_alignments_file="./alignments_sorted_${read_num}.sam"
+    filtered_reads1_file="${work_dir}/filtered_reads1_${read_num}.fastq"
+    filtered_reads2_file="${work_dir}/filtered_reads2_${read_num}.fastq"
+
+    # module load bowtie2/2.2.3
+    # bowtie2 -x ${index} -1 reads1_part_${read_num}.fq -2 reads2_part_${read_num}.fq -S ${alignments_file}
 #     export batch_sort_cmd=$(cat <<-EOF
 #         module load samtools/1.6.0
-#         rm ${sorted_alignments_file}.tmp*
+#         rm -f ${sorted_alignments_file}.tmp*
 #         samtools sort -o ${sorted_alignments_file} ${alignments_file}
 #         touch ${sorted_alignments_file}
 # EOF
@@ -206,38 +208,39 @@ find_hdr_jobid=""
 
 #     submit_job --job-name=batch_sort_${read_num} --job_id_out=batch_sort_jobid --cmd="$batch_sort_cmd"
 
-#     fastq_regions_cmd=$(cat <<-EOF
-#         GrassSV.py filter_reads -f1 ${filtered_reads1_file} -f2 ${filtered_reads2_file} -s ${sorted_alignments_file} -ss ${sorted_alignments_file} -roi ${roi} > ${work_dir}/filter_reads_${read_num}.txt
-# EOF
-#     )
+    fastq_regions_cmd=$(cat <<-EOF
+        module load python/3.9.2
+        /usr/bin/time -v -o ${work_dir}/filter_reads${read_num}.time GrassSV.py filter_reads -f1 ${filtered_reads1_file} -f2 ${filtered_reads2_file} -s ${sorted_alignments_file} -ss ${sorted_alignments_file} -roi ${roi} > ${work_dir}/filter_reads_${read_num}.txt
+EOF
+    )
 
-#     submit_job --job-name="fastq_regions_${read_num}" --dependency="afterok:$batch_sort_jobid" --cmd="$fastq_regions_cmd" --job_id_out=fastq_regions_jobid
-#     fastq_regions_jobids+=($fastq_regions_jobid)
-# done
+#  --dependency="afterok:$batch_sort_jobid:$find_roi_jobid"
+    submit_job --job-name="fastq_regions_${read_num}" --dependency="afterok:$find_roi_jobid" --cmd="$fastq_regions_cmd" --job_id_out=fastq_regions_jobid
+    fastq_regions_jobids+=($fastq_regions_jobid)
+done
 
-# merge_filtered_reads_cmd=$(cat <<-EOF
-#     cat ${work_dir}/filtered_reads1_*.fastq > ${filtered_reads1}
-#     cat ${work_dir}/filtered_reads2_*.fastq > ${filtered_reads2}
-# EOF
-# )
+merge_filtered_reads_cmd=$(cat <<-EOF
+    cat ${work_dir}/filtered_reads1_*.fastq > ${filtered_reads1}
+    cat ${work_dir}/filtered_reads2_*.fastq > ${filtered_reads2}
+EOF
+)
 
-# #--dependency="afterok:${fastq_regions_jobids[*]}"
-# submit_job --job-name="merge_filtered_reads" --cmd="$merge_filtered_reads_cmd" --job_id_out=merge_filtered_reads_jobid
+fastq_regions_dependency=$(IFS=':'; echo "afterok:${fastq_regions_jobids[*]}"); dependency=${dependency#*:}
+submit_job --job-name="merge_filtered_reads" --dependency=$fastq_regions_dependency --cmd="$merge_filtered_reads_cmd" --job_id_out=merge_filtered_reads_jobid
 
-# alga_cmd="$scriptDir/run_alga.sh > $work_dir/run_alga.txt"
-# submit_job --job-name="alga" --dependency="afterok:$merge_filtered_reads_jobid" --cmd="$alga_cmd" --job_id_out=alga_jobid
+alga_cmd="/usr/bin/time -v -o ${work_dir}/run_alga.time $scriptDir/run_alga.sh > $work_dir/run_alga.txt"
+submit_job --job-name="alga" --dependency="afterok:$merge_filtered_reads_jobid" --cmd="$alga_cmd" --job_id_out=alga_jobid
 
-#--dependency="afterok:$alga_jobid"
-quast_cmd="$scriptDir/run_quast.sh > $work_dir/run_quast.txt"
-submit_job --job-name="quast" --cmd="$quast_cmd" --job_id_out=quast_jobid
+quast_cmd="/usr/bin/time -v -o ${work_dir}/run_quast.time $scriptDir/run_quast.sh > $work_dir/run_quast.txt"
+submit_job --job-name="quast" --dependency="afterok:$alga_jobid" --cmd="$quast_cmd" --job_id_out=quast_jobid
 
-find_sv_cmd="GrassSV.py find_sv $quast_alignments -o $results > $work_dir/find_sv.txt"
+find_sv_cmd="/usr/bin/time -v -o ${work_dir}/find_sv.time GrassSV.py find_sv $quast_alignments -o $results > $work_dir/find_sv.txt"
 submit_job --job-name="find_sv" --dependency="afterok:$quast_jobid" --cmd="$find_sv_cmd" --job_id_out=find_sv_jobid
 
-find_hdr_cmd="GrassSV.py find_hdr $coverage_file $results/duplications.bed > $work_dir/find_hdr.txt"
+find_hdr_cmd="/usr/bin/time -v -o ${work_dir}/find_hdr.time GrassSV.py find_hdr $coverage_file $results/duplications.bed > $work_dir/find_hdr.txt"
 submit_job --job-name="find_hdr" --cmd="$find_hdr_cmd" --job_id_out=find_hdr_jobid
 
-Add SLURM job IDs to an array for reference or further processing
+# Add SLURM job IDs to an array for reference or further processing
 job_ids=("$merge_filtered_reads_jobid" "$alga_jobid" "$quast_jobid" "$find_sv_jobid" "$find_hdr_jobid")
 
 # Print the job IDs
