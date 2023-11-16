@@ -1,12 +1,13 @@
 import argparse, argcomplete, textwrap
 
-from GrassSV.Scripts import csv2bed, check_sv, check_breakpoint
+from GrassSV.Scripts import csv2bed, check_sv, check_breakpoint, plot
 
 TEXT = 'utils'
 
 CSV2BED = "csv2bed"
 CHECK_SV = "check_sv"
 CHECH_SV_BR = "check_sv_br"
+PLOT_PRECISION = "plot_precision"
 
 def add_subparser(subparsers):
     utils = subparsers.add_parser(TEXT, help='Utilities [csv2bed, sv_check]',
@@ -51,6 +52,13 @@ def add_subparser(subparsers):
     check_sv_br.add_argument('-g', '--generated', type=str, metavar='path', help='Path to directory containing generated/known mutations', required=True)
     check_sv_br.add_argument('-d', '--detected', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
 
+    plot_precision = utils_subparer.add_parser(PLOT_PRECISION, 
+                                        formatter_class=argparse.RawTextHelpFormatter,
+                                        help="Create a precision recall plot",
+                                        description="\033[1;36m"
+                                                    "Creates a plot.\n"
+                                                    "\033[0m")
+
 
 def action(args):
     if args.utils_action == CSV2BED:
@@ -61,4 +69,7 @@ def action(args):
         pass
     elif args.utils_action == CHECH_SV_BR:
         check_breakpoint.check_sv(detected_dir = args.detected, generated_dir = args.generated )
+        pass
+    elif args.utils_action == PLOT_PRECISION:
+        plot.plot_data()
         pass

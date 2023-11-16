@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import sys
+import pickle
 
-from GrassSV.Alignment.alignments import TranslocationPattern, Pattern, do_they_intersect, sort_coords
+from GrassSV.Alignment.alignments import TranslocationPattern, Pattern, do_they_intersect, sort_coords, export_records
 from GrassSV.Alignment.load_bed import load_pattern_bed, load_translocations_bed
 
 #import numpy crashes on eagle for some reason
@@ -131,7 +132,7 @@ def calculate_breakpoints_classified_as_insertions(generatedtab, foundtab, margi
     invalid = foundtab_size - count_found
     return count_found
 
-def calculate_invalid_breakpoint(generated_arr_arr, detected_arr, margin):
+def calculate_invalid_breakpoint(generated_arr_arr, detected_arr, margin, invalid_arr = None):
     invalid = 0
     
     for found in detected_arr:
@@ -150,7 +151,10 @@ def calculate_invalid_breakpoint(generated_arr_arr, detected_arr, margin):
             if isinvalid == False:
                 break
 
-        invalid += isinvalid
+        if isinvalid == True:
+            if invalid_arr is not None:
+                invalid_arr.append(found)
+            invalid += 1
         
     return invalid
 
@@ -175,13 +179,21 @@ def bp_mode(generated_dir, detected_dir):
     generated_translocations_f = load_if_exists(f"{generated_dir}/translocations.from.bed", load_pattern_bed)
     generated_translocations_t = load_if_exists(f"{generated_dir}/translocations.to.bed", load_pattern_bed)
     generated_duplications   = load_if_exists(f"{generated_dir}/duplications.bed", load_pattern_bed)
+    TotalBreakpoints = 2*len(generated_deletions) + 2*len(generated_inversions)  + \
+                       2*len(generated_duplications) + len(generated_insertions) + \
+                       3*len(generated_translocations_f)
 
-    print(f"AS          [DEL][INV][DUP][INS][TRN][FalsePositive]")
+
+    print(f"AS          [DEL][INV][DUP][INS][TRN]||[ TP ][ FP ][ FN ]||[Precision][Recall]")
     print(f"BREAKPOINTS [{2*len(generated_deletions):3}][{2*len(generated_inversions):3}][{2*len(generated_duplications):3}][{len(generated_insertions):3}][{3*len(generated_translocations_f):3}]")
 
     found_breakpoint      = load_pattern_bed(f"{detected_dir}/breakpoints.bed") # this should not fail to load
     if found_breakpoint:
-        for prec, margin in zip([99,95,80],[1,10,70]):
+
+        axis_margin = []
+        axis_precision = []
+        axis_recall = []
+        for margin in range(1,300,10):
                 were_deletions      = calculate_breakpoints_classified_as_insertions(generated_deletions     , found_breakpoint, margin)
                 were_inversions     = calculate_breakpoints_classified_as_insertions(generated_inversions    , found_breakpoint, margin)
                 were_duplications   = calculate_breakpoints_classified_as_insertions(generated_duplications  , found_breakpoint, margin)
@@ -190,13 +202,37 @@ def bp_mode(generated_dir, detected_dir):
                 if 0 != int_or_0(were_translocations) and 0 != int_or_0(were_tr_ins):
                     were_translocations = were_translocations + were_tr_ins #ugly, but will prevent adding strings to ints
                 were_insertions     = calculate_all_insertions(generated_insertions, found_breakpoint, margin)
-
                 found_insertions     = load_if_exists(f"{detected_dir}/insertions.bed",     load_pattern_bed)
-                FalsePositive = calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_breakpoint, margin) - calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_insertions, margin)
+
+                TruePositives  = sum([int_or_0(x) for x in [were_deletions, were_inversions, were_duplications, were_translocations, were_insertions]])
+                FalsePositives = len(found_breakpoint) - TruePositives
+                # FalsePositives = calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_breakpoint, margin) + calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_insertions, margin)
+
+                FalseNegatives = TotalBreakpoints - TruePositives
+                Precission = 100 * TruePositives // (TruePositives + FalsePositives)
+                Recall     = 100 * TruePositives // (TruePositives + FalseNegatives)
+
+                axis_precision = axis_precision + [Precission]
+                axis_recall = axis_recall + [Recall]
 
                 name = f"BRP - {len(found_breakpoint)}"
-                print(f"[{name:10}] {were_deletions:3}, {were_inversions:3}, {were_duplications:3}, {were_insertions:3}, {were_translocations:3}, {FalsePositive:4}| [prec={prec:2}%; margin={margin:2}bp]")
+                print(f"[{name:10}] {were_deletions:3}, {were_inversions:3}, {were_duplications:3}, {were_insertions:3}, {were_translocations:3} ||[{TruePositives:4}][{FalsePositives:4}][{FalseNegatives:4}]||[{Precission:2}%; {Recall:2}%]")
         
+        margin = 100
+        invalid_breakpoints = []
+        calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_breakpoint, margin, invalid_breakpoints)
+        calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_insertions, margin, invalid_breakpoints)
+        export_records(invalid_breakpoints, f"{detected_dir}/invalid_breakpoints.bed")
+
+        print(f"{axis_margin}")
+        print(f"{axis_precision}")
+        print(f"{axis_recall}")
+
+        sv_detector_name = detected_dir.split('/')[0]
+        with open(f"{sv_detector_name}.pickle", 'wb') as file:
+            print(f"Saving pickle to {sv_detector_name}.pickle")
+            pickle.dump([axis_recall, axis_precision], file, protocol=pickle.HIGHEST_PROTOCOL)
+
 
     return
 
