@@ -23,6 +23,15 @@ def load_alignments(path):
     contig = 0
     for line in input:
         line = line.split("\t")
+
+        #This is a fix for the sacharomytes yeast genome
+        def correct_ref_name(ref):
+            ref = list(ref)
+            ref[3] = '|'
+            ref[-1] = '|'
+            ref = ''.join(ref)
+            return ref
+
         if (line[0].isnumeric()):
             alignment = Alignment(
                     chromosome = correct_ref_name(line[4]),

@@ -1,4 +1,5 @@
 from typing import *
+from itertools import groupby
 from enum import Enum
 
 from GrassSV.Alignment.alignments import Alignment, Contig, Pattern, are_they_adjacent
@@ -16,9 +17,18 @@ def pairwise(it):
         # no more elements in the iterator
         return
 
+def combination(it, r):
+    if r:
+        for i in range(r - 1, len(it)):
+            for cl in combination(it[:i], r - 1):
+                yield cl + (it[i],)
+    else:
+        yield tuple()
+
 
 def find_alignment_patterns(alignments):
     alignments.sort(key=lambda alignment: (alignment.chromosome, alignment.start))
+
     insertions = []
     duplications = []
     others = []
@@ -46,27 +56,29 @@ def find_alignment_patterns(alignments):
 
 
 def filter_inversions(inversion_patterns):
-    inversion_patterns.sort(key=lambda alignment: (alignment.chromosome, alignment.start))
     inversions = []
     skip_next = False
-    for first_pattern, second_pattern in pairwise(inversion_patterns):
-        same_chromosome = second_pattern.chromosome == first_pattern.chromosome
-        intersects = second_pattern.start < first_pattern.end
-        if same_chromosome and intersects:
-            skip_next = True
-            inversions.append(
-                Pattern(
-                    chromosome=first_pattern.chromosome,
-                    start=second_pattern.start,
-                    end=first_pattern.end,
-                    supporting_alignments=first_pattern.supporting_alignments + second_pattern.supporting_alignments
-                ))
-        elif not skip_next:
-            inversions.append(
-                first_pattern
-            )
-        else:
-            skip_next = False
+
+    for chromosome, iterator in groupby(inversion_patterns, key= lambda x : x.chromosome):
+        iterations_grouped_by_chromosome = list(iterator)
+        for first, second in combination(iterations_grouped_by_chromosome, 2):
+            # Sanitize data
+            first.start, first.end = sorted([first.start, first.end])
+            second.start, second.end = sorted([second.start, second.end])
+            # Sorting so the overlap calculation is easier 
+            first, second = sorted([first, second], key=lambda x : x.start)
+            overlap_exists = not (first.end < second.start or second.end < first.start)
+            union_start , overlap_start, overlap_end, union_end = sorted([first.start, first.end, second.start, second.end])
+            virtually_identical = 0.95 < (overlap_end - overlap_start) / (union_end - union_start)
+            if overlap_exists and virtually_identical:
+                inversions.append(
+                    Pattern(
+                        chromosome=first.chromosome,
+                        start=overlap_start,
+                        end=overlap_end,
+                        supporting_alignments=first.supporting_alignments + second.supporting_alignments
+                    ))
+
     return inversions
 
 

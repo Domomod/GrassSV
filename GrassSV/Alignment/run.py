@@ -3,8 +3,7 @@ import sys
 from GrassSV.Alignment.load_alignments import load_alignments
 from GrassSV.Alignment.contig_analysis import find_contig_patterns
 from GrassSV.Alignment.translocation_detect import TranslocationFilter
-from GrassSV.Alignment.pipeline import filter_inversions, \
-    find_alignment_patterns, find_duplications
+from GrassSV.Alignment.pipeline import filter_inversions, find_alignment_patterns, find_duplications
 from GrassSV.Alignment.alignments import export_records, export_supporting_alignments
 
 
@@ -18,8 +17,8 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
     alignment_insertions = alignment_patterns["insertions"]
     contig_insertions = contig_patterns.insertions
-    insertions = contig_insertions + alignment_insertions
-
+    insertions = contig_insertions
+    insertions_low = alignment_insertions
     inversions_filtered = filter_inversions(contig_patterns.inversions)
 
     translocations, deletions, unused_breakpoints, duplications \
@@ -32,6 +31,7 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
     #Raport
     export_records(insertions, f"{output_folder_path}/detectedSVs/insertions.bed")
+    export_records(insertions_low, f"{output_folder_path}/detectedSVs/insertions_low_confidence.bed")
     export_records(inversions_filtered, f"{output_folder_path}/detectedSVs/inversions.bed")
     export_records(deletions, f"{output_folder_path}/detectedSVs/deletions.bed")
     #export_records(duplications, f"{output_folder_path}/detectedSVs/duplications.bed")

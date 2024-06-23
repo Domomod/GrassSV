@@ -17,7 +17,7 @@ def load_regular(path):
     patterns = []
     data = pandas.read_csv(path, sep='\t')
     for idx, row in data.iterrows():
-        chromosome = row['Chr'].split(' ', 1)[0]
+        chromosome = row['Chr'].split('_', 1)[0]
         chromosome = correct_ref_name(chromosome)
         start = row['Start']
         end = row['End']
