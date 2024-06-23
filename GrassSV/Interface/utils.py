@@ -83,6 +83,7 @@ def add_subparser(subparsers):
     venn_diagram.add_argument('--set2', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
     venn_diagram.add_argument('--set3', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
     venn_diagram.add_argument('--set4', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
+    venn_diagram.add_argument('--ground_truth', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
 
 
 def action(args):
@@ -102,5 +103,5 @@ def action(args):
         plot.plot_data()
         pass
     elif args.utils_action == VENN_DIAGRAM:
-        venn_diagram.venn_diagram(args.set1, args.set2, args.set3, args.set4)
+        venn_diagram.venn_diagram(args.set1, args.set2, args.set3, args.set4, args.ground_truth)
         pass

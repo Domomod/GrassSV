@@ -79,6 +79,3 @@ def plot_data():
         plot_file = f"precision_recall_margin_plot.{format}"
         print(f"Saving plot to {plot_file}")
         plt.savefig(plot_file, format=format)
-
-# Call the function to plot the data
-plot_data()
