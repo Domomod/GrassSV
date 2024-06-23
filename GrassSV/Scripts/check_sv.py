@@ -172,6 +172,7 @@ def int_or_0(val):
         return 0
 
 
+
 def bp_mode(generated_dir, detected_dir):
     generated_deletions      = load_if_exists(f"{generated_dir}/deletions.bed", load_pattern_bed)
     generated_insertions     = load_if_exists(f"{generated_dir}/insertions.bed", load_pattern_bed)
@@ -209,11 +210,19 @@ def bp_mode(generated_dir, detected_dir):
                 # FalsePositives = calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_breakpoint, margin) + calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_insertions, margin)
 
                 FalseNegatives = TotalBreakpoints - TruePositives
-                Precission = 100 * TruePositives // (TruePositives + FalsePositives)
-                Recall     = 100 * TruePositives // (TruePositives + FalseNegatives)
+                try:
+                    Precission = 100 * TruePositives // (TruePositives + FalsePositives)
+                except:
+                    Precission = 0
+
+                try:
+                    Recall     = 100 * TruePositives // (TruePositives + FalseNegatives)
+                except:
+                    Recall = 0
 
                 axis_precision = axis_precision + [Precission]
                 axis_recall = axis_recall + [Recall]
+                axis_margin = axis_margin + [margin]
 
                 name = f"BRP - {len(found_breakpoint)}"
                 print(f"[{name:10}] {were_deletions:3}, {were_inversions:3}, {were_duplications:3}, {were_insertions:3}, {were_translocations:3} ||[{TruePositives:4}][{FalsePositives:4}][{FalseNegatives:4}]||[{Precission:2}%; {Recall:2}%]")
@@ -232,7 +241,11 @@ def bp_mode(generated_dir, detected_dir):
         with open(f"{sv_detector_name}.pickle", 'wb') as file:
             print(f"Saving pickle to {sv_detector_name}.pickle")
             pickle.dump([axis_recall, axis_precision], file, protocol=pickle.HIGHEST_PROTOCOL)
-
+       
+        import csv; 
+        vectors = zip(axis_margin, axis_precision, axis_recall); 
+        with open(f"{sv_detector_name}.csv", 'w', newline='') as f: 
+            csv.writer(f).writerows(vectors)
 
     return
 
@@ -305,3 +318,39 @@ def check_sv(generated_dir, detected_dir, only_breakpoints):
     
                 name = f" TRN - {len(found_translocations)}"
                 print(f"[{name:10}] {were_deletions:3}, {were_inversions:3}, {were_duplications:3}, {were_insertions:3}, {were_translocations:3}, {FalsePositive:4}| [prec={prec:2}%; margin={margin:2}bp]")
+
+def check_sv_benchmark(generated_dir, detected_dir):
+    exceptions = []
+
+    benchmark_insertions = load_if_exists(f"{generated_dir}/insertions.bed", load_pattern_bed)
+    benchmark_other      = load_if_exists(f"{generated_dir}/deletions.bed", load_pattern_bed)
+
+    found_deletions      = load_if_exists(f"{detected_dir}/deletions.bed",      load_pattern_bed)
+    found_insertions     = load_if_exists(f"{detected_dir}/insertions.bed",     load_pattern_bed)
+    found_inversions     = load_if_exists(f"{detected_dir}/inversions.bed",     load_pattern_bed)
+    found_duplications   = load_if_exists(f"{detected_dir}/duplications.bed",   load_pattern_bed)
+    
+    #TODO: Check translocations
+    #found_translocations_from = load_if_exists(f"{detected_dir}/translocations.bed", load_translocations_bed)
+    #found_translocations_to = load_if_exists(f"{detected_dir}/translocations.bed", load_translocations_bed)
+
+    SV_TYPE=[f"DEL - {len(found_deletions)}", f" INV - {len(found_inversions)}", f"DUP - {len(found_duplications)}"]
+    SV_FOUND=[found_deletions, found_inversions,  found_duplications]
+    SV_LENS = [len(found_deletions), len(found_inversions), len(found_duplications)]
+
+
+    print(f"            [TruePositive][FalsePositive]")
+    for TYPE, FOUND, LEN in zip(SV_TYPE, SV_FOUND, SV_LENS):
+        if LEN != 0:
+            for prec, margin in zip([99,95,80],[1,10,70]):
+                TruePositive = calculate_type(benchmark_other, FOUND, prec)
+                FalsePositive = LEN - int_or_0(TruePositive)
+                print(f"[{TYPE:10}] {TruePositive:14}, {FalsePositive:14}| [prec={prec:2}%; margin={margin:2}bp]")
+
+    if found_insertions:
+        for prec, margin in zip([99,95,80],[1,10,70]):
+                TruePositive  = calculate_all_insertions(benchmark_insertions, found_insertions, margin)
+                FalsePositive = len(found_insertions) - TruePositive
+
+                name = f"INS - {len(found_insertions)}"
+                print(f"[{name:10}] {TruePositive:14}, {FalsePositive:14}| [prec={prec:2}%; margin={margin:2}bp]")

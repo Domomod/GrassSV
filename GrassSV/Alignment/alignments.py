@@ -84,6 +84,10 @@ class Pattern(ConvertableToBed, SupportConvertableToBed):
         return ''.join(
             [alignment.to_bed(f"{name}-{self.uid}-{i}") for i, alignment in enumerate(self.supporting_alignments)])
 
+    def __hash__(self):
+        return hash((self.chromosome, self.start, self.end))
+
+
 
 ####################################################################################
 # Unique data type required for describing insertions pattern

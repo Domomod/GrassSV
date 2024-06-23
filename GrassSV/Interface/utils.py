@@ -1,13 +1,15 @@
 import argparse, argcomplete, textwrap
 
-from GrassSV.Scripts import csv2bed, check_sv, check_breakpoint, plot
+from GrassSV.Scripts import csv2bed, check_sv, check_breakpoint, plot, venn_diagram
 
 TEXT = 'utils'
 
 CSV2BED = "csv2bed"
 CHECK_SV = "check_sv"
 CHECH_SV_BR = "check_sv_br"
+CHECH_SV_BENCHMARK = "check_sv_benchmark"
 PLOT_PRECISION = "plot_precision"
+VENN_DIAGRAM = "venn_diagram"
 
 def add_subparser(subparsers):
     utils = subparsers.add_parser(TEXT, help='Utilities [csv2bed, sv_check]',
@@ -52,12 +54,35 @@ def add_subparser(subparsers):
     check_sv_br.add_argument('-g', '--generated', type=str, metavar='path', help='Path to directory containing generated/known mutations', required=True)
     check_sv_br.add_argument('-d', '--detected', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
 
+    check_sv_benchmark = utils_subparer.add_parser(CHECH_SV_BENCHMARK, 
+                                        formatter_class=argparse.RawTextHelpFormatter,
+                                        help="Compare two files with structural variations in benchmark",
+                                        description="\033[1;36m"
+                                                    "Checks how many records from [-d] input files can be also found in [-b] input files.\n"
+                                                    "The generated breakpoints may be manualy enlarged on both sizes, to allow for a margin of error. \n"
+                                                    "\033[0m")
+    check_sv_benchmark.add_argument('-b', '--benchmark', type=str, metavar='path', help='Path to directory containing generated/known mutations', required=True)
+    check_sv_benchmark.add_argument('-d', '--detected', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
+
     plot_precision = utils_subparer.add_parser(PLOT_PRECISION, 
                                         formatter_class=argparse.RawTextHelpFormatter,
                                         help="Create a precision recall plot",
                                         description="\033[1;36m"
                                                     "Creates a plot.\n"
                                                     "\033[0m")
+
+    venn_diagram = utils_subparer.add_parser(VENN_DIAGRAM, 
+                                    formatter_class=argparse.RawTextHelpFormatter,
+                                    help="Create a precision recall plot",
+                                    description="\033[1;36m"
+                                                "Creates a plot.\n"
+                                                "\033[0m")
+
+
+    venn_diagram.add_argument('--set1', type=str, metavar='path', help='Path to directory containing generated/known mutations', required=True)
+    venn_diagram.add_argument('--set2', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
+    venn_diagram.add_argument('--set3', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
+    venn_diagram.add_argument('--set4', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
 
 
 def action(args):
@@ -70,6 +95,12 @@ def action(args):
     elif args.utils_action == CHECH_SV_BR:
         check_breakpoint.check_sv(detected_dir = args.detected, generated_dir = args.generated )
         pass
+    elif args.utils_action == CHECH_SV_BENCHMARK:
+        check_sv.check_sv_benchmark(detected_dir = args.detected, generated_dir = args.benchmark )
+        pass
     elif args.utils_action == PLOT_PRECISION:
         plot.plot_data()
+        pass
+    elif args.utils_action == VENN_DIAGRAM:
+        venn_diagram.venn_diagram(args.set1, args.set2, args.set3, args.set4)
         pass
