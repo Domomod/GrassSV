@@ -2,6 +2,9 @@
 
 import sys
 import pickle
+import pprint
+import csv
+from collections import namedtuple
 
 from GrassSV.Alignment.alignments import TranslocationPattern, Pattern, do_they_intersect, sort_coords, export_records
 from GrassSV.Alignment.load_bed import load_pattern_bed, load_translocations_bed
@@ -90,7 +93,7 @@ def calculate_insertions(first, second, margin):
     return same_chromosome and start_coordinates and end_coordinates
 
 
-def calculate_misclasified_insertions(generatedtab, foundtab, margin):
+def calculate_misclassified_insertions(generatedtab, foundtab, margin):
     if not generatedtab or not foundtab:
         return " X "
     count_found =0
@@ -172,6 +175,9 @@ def int_or_0(val):
         return 0
 
 
+def load_structural_variations(directory, sv_types):
+    return {sv_type: load_if_exists(f"{directory}/{sv_type}.bed", load_pattern_bed) for sv_type in sv_types}
+
 
 def bp_mode(generated_dir, detected_dir):
     generated_deletions      = load_if_exists(f"{generated_dir}/deletions.bed", load_pattern_bed)
@@ -249,75 +255,136 @@ def bp_mode(generated_dir, detected_dir):
 
     return
 
-def check_sv(generated_dir, detected_dir, only_breakpoints):
-    exceptions = []
+def save_data_to_csv(data, filename):
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Type', 'Precision', 'Margin', 'Deletions', 'Inversions', 'Duplications', 'Insertions', 'Translocations', 'FalsePositive'])
+        for row in data:
+            writer.writerow(row)
+
+def save_data_to_pickle(data, filename):
+    with open(filename, 'wb') as picklefile:
+        pickle.dump(data, picklefile)
+
+
+
+# Define constants for precision and margins
+PRECISIONS = [99, 95, 80]
+MARGINS = [1, 10, 70]
+# Define a named tuple for collected data
+CollectedData = namedtuple('CollectedData', 'type sub_type deletions inversions duplications insertions translocations false_positive')
+
+def calculate_all(generated, FOUND, precision, margin, specific_calculations=None):
+    calculations = {
+        'deletions': calculate_type(generated['deletions'], FOUND, precision),
+        'inversions': calculate_type(generated['inversions'], FOUND, precision),
+        'duplications': calculate_type(generated['duplications'], FOUND, precision),
+        'translocations': calculate_type(generated['translocations_separated'], FOUND, precision),
+        'insertions': calculate_misclassified_insertions(generated['insertions'], FOUND, margin)
+    }
+
+    if specific_calculations:
+        calculations.update(specific_calculations)
+
+    return calculations
+
+def process_data(name, calculations, FOUND_len, precision, margin, collected_data):
+    false_positive = FOUND_len - sum(map(int_or_0, calculations.values()))
     
-    if(only_breakpoints):
+    print(f"[{name:10}] {calculations['deletions']:3}, {calculations['inversions']:3}, {calculations['duplications']:3}, {calculations['insertions']:3}, {calculations['translocations']:3}, {false_positive:4}| [prec={precision:2}%; margin={margin:2}bp]")
+    collected_data[margin].append(CollectedData(name[:3], name[6:], calculations['deletions'], calculations['inversions'], calculations['duplications'], calculations['insertions'], calculations['translocations'], false_positive))
+
+def process_type(precision, margin, TYPE, FOUND, LEN, generated, collected_data_list):
+    calculations = calculate_all(generated, FOUND, precision, margin)
+    process_data(TYPE, calculations, LEN, precision, margin, collected_data_list)
+
+def process_found_insertions(precision, margin, TYPE, FOUND, LEN, generated, collected_data_list):
+    specific_calculations = {
+        'deletions': calculate_breakpoints_classified_as_insertions(generated['deletions'], FOUND, margin),
+        'inversions': calculate_breakpoints_classified_as_insertions(generated['inversions'], FOUND, margin),
+        'duplications': calculate_breakpoints_classified_as_insertions(generated['duplications'], FOUND, margin),
+        'translocations': calculate_breakpoints_classified_as_insertions(generated['translocations_f'], FOUND, margin),
+        'trans_ins': calculate_all_insertions(generated['translocations_t'], FOUND, margin),
+        'insertions': calculate_all_insertions(generated['insertions'], FOUND, margin)
+    }
+    if int_or_0(specific_calculations['translocations']) and int_or_0(specific_calculations['trans_ins']):
+        specific_calculations['translocations'] += specific_calculations['trans_ins']
+        
+    process_data(TYPE, specific_calculations, len(FOUND), precision, margin, collected_data_list)
+
+def process_found_translocations(precision, margin, TYPE, FOUND, LEN, generated, collected_data_list):
+    specific_calculations = {
+        'deletions': " X ",
+        'inversions': " X ",
+        'duplications': " X ",
+        'insertions': " X ",
+        'translocations': calculate_all_translocations(generated['translocations'], FOUND, precision, margin)
+    }
+
+    process_data(TYPE, specific_calculations, len(FOUND), precision, margin, collected_data_list)
+
+def process_by_type(process_function, found_items, generated, collected_data):
+    for precision, margin in zip(PRECISIONS, MARGINS):
+        process_function(precision, margin, found_items, generated, collected_data)
+
+def save_collected_data(collected_data, detected_dir):
+    for margin in MARGINS:
+        csv_filename = f'sv_analysis_margin_{margin}.{detected_dir}.csv'
+        pickle_filename = f'sv_analysis_margin_{margin}.{detected_dir}.pkl'
+        save_data_to_csv(collected_data[margin], csv_filename)
+        save_data_to_pickle(collected_data[margin], pickle_filename)
+        
+        # Save transposed collected_data
+        transposed_data = list(zip(*collected_data[margin]))
+        transposed_csv_filename = f'sv_analysis_margin_{margin}_transposed.{detected_dir}.csv'
+        transposed_pickle_filename = f'sv_analysis_margin_{margin}_transposed.{detected_dir}.pkl'
+        save_data_to_csv(transposed_data, transposed_csv_filename)
+        save_data_to_pickle(transposed_data, transposed_pickle_filename)
+
+def check_sv(generated_dir, detected_dir, only_breakpoints):
+    if only_breakpoints:
         bp_mode(generated_dir, detected_dir)
         return 0
 
-    generated_deletions      = load_if_exists(f"{generated_dir}/deletions.bed", load_pattern_bed)
-    generated_insertions     = load_if_exists(f"{generated_dir}/insertions.bed", load_pattern_bed)
-    generated_inversions     = load_if_exists(f"{generated_dir}/inversions.bed", load_pattern_bed)
-    generated_translocations = load_if_exists(f"{generated_dir}/translocations.bed", load_translocations_bed)
-    generated_duplications   = load_if_exists(f"{generated_dir}/duplications.bed", load_pattern_bed)
-
-    generated_translocations_separated = load_if_exists(f"{generated_dir}/translocations.bed", load_pattern_bed)
-    generated_translocations_f = load_if_exists(f"{generated_dir}/translocations.from.bed", load_pattern_bed)
-    generated_translocations_t = load_if_exists(f"{generated_dir}/translocations.to.bed", load_pattern_bed)
-
-    found_deletions      = load_if_exists(f"{detected_dir}/deletions.bed",      load_pattern_bed)
-    found_insertions     = load_if_exists(f"{detected_dir}/insertions.bed",     load_pattern_bed)
-    found_inversions     = load_if_exists(f"{detected_dir}/inversions.bed",     load_pattern_bed)
+    found_deletions = load_if_exists(f"{detected_dir}/deletions.bed", load_pattern_bed)
+    found_insertions = load_if_exists(f"{detected_dir}/insertions.bed", load_pattern_bed)
+    found_inversions = load_if_exists(f"{detected_dir}/inversions.bed", load_pattern_bed)
     found_translocations = load_if_exists(f"{detected_dir}/translocations.bed", load_translocations_bed)
-    found_duplications   = load_if_exists(f"{detected_dir}/duplications.bed",   load_pattern_bed)
-    found_bnd            = load_if_exists(f"{detected_dir}/bnds.bed",            load_pattern_bed)
+    found_duplications = load_if_exists(f"{detected_dir}/duplications.bed", load_pattern_bed)
+    found_bnd = load_if_exists(f"{detected_dir}/bnds.bed", load_pattern_bed)
 
-    SV_TYPE=[f"DEL - {len(found_deletions)}", f" INV - {len(found_inversions)}", f"DUP - {len(found_duplications)}", f" BND - {len(found_bnd)}"]
-    SV_FOUND=[found_deletions, found_inversions,  found_duplications, found_bnd]
-    SV_LENS = [len(found_deletions), len(found_inversions), len(found_duplications), len(found_bnd)]
+    SV_TYPE = [f"DEL - {len(found_deletions)}", f"INV - {len(found_inversions)}", f"DUP - {len(found_duplications)}", f"BND - {len(found_bnd)}", f"INS - {len(found_insertions)}", f"TRN - {len(found_translocations)}"]
+    SV_FOUND = [found_deletions, found_inversions, found_duplications, found_bnd, found_insertions, found_translocations]
+    SV_LENS = [len(found_deletions), len(found_inversions), len(found_duplications), len(found_bnd), len(found_insertions), len(found_translocations)]
+    SV_FUNC = [process_type, process_type, process_type, process_type, process_found_insertions, process_found_translocations]
 
+    # Define the generated data dictionary
+    generated = {
+        'deletions': load_if_exists(f"{generated_dir}/deletions.bed", load_pattern_bed),
+        'inversions': load_if_exists(f"{generated_dir}/inversions.bed", load_pattern_bed),
+        'duplications': load_if_exists(f"{generated_dir}/duplications.bed", load_pattern_bed),
+        'translocations': load_if_exists(f"{generated_dir}/translocations.bed", load_translocations_bed),
+        'translocations_separated': load_if_exists(f"{generated_dir}/translocations.bed", load_pattern_bed),
+        'translocations_f': load_if_exists(f"{generated_dir}/translocations.bed", load_pattern_bed),
+        'translocations_t': load_if_exists(f"{generated_dir}/translocations.to.bed", load_pattern_bed),
+        'insertions': load_if_exists(f"{generated_dir}/insertions.bed", load_pattern_bed)
+    }
 
     print(f"            [DEL][INV][DUP][INS][TRN][FalsePositive]")
-    print(f"            [{len(generated_deletions):3}][{len(generated_inversions):3}][{len(generated_duplications):3}][{len(generated_insertions):3}][{len(generated_translocations):4}]")
-    for TYPE, FOUND, LEN in zip(SV_TYPE, SV_FOUND, SV_LENS):
+    print(f"            [{len(generated['deletions']):3}][{len(generated['inversions']):3}][{len(generated['duplications']):3}][{len(generated['insertions']):3}][{len(generated['translocations']):4}]")
+
+    collected_data = {margin: [] for margin in MARGINS}
+    for TYPE, FOUND, LEN, process_funtions in zip(SV_TYPE, SV_FOUND, SV_LENS, SV_FUNC):
         if LEN != 0:
-            for prec, margin in zip([99,95,80],[1,10,70]):
-                were_deletions      = calculate_type(generated_deletions,    FOUND, prec)
-                were_inversions     = calculate_type(generated_inversions,   FOUND, prec)
-                were_duplications   = calculate_type(generated_duplications, FOUND, prec)
-                were_translocations = calculate_type(generated_translocations_separated, FOUND, prec)
-                were_insertions     = calculate_misclasified_insertions(generated_insertions, FOUND, margin)
-                FalsePositive = LEN - int_or_0(were_deletions) - int_or_0(were_inversions) - int_or_0(were_duplications) - int_or_0(were_translocations) - int_or_0(were_insertions)
+            process_by_type(
+                lambda precision, margin, found, gen, col: process_funtions(precision, margin, TYPE, FOUND, LEN, generated, col),
+                FOUND,
+                generated,
+                collected_data
+            )
 
-                print(f"[{TYPE:10}] {were_deletions:3}, {were_inversions:3}, {were_duplications:3}, {were_insertions:3}, {were_translocations:3}, {FalsePositive:4}| [prec={prec:2}%; margin={margin:2}bp]")
+    save_collected_data(collected_data, detected_dir.split('/')[0])
 
-    if found_insertions:
-        for prec, margin in zip([99,95,80],[1,10,70]):
-                were_deletions      = calculate_breakpoints_classified_as_insertions(generated_deletions     , found_insertions, margin)
-                were_inversions     = calculate_breakpoints_classified_as_insertions(generated_inversions    , found_insertions, margin)
-                were_duplications   = calculate_breakpoints_classified_as_insertions(generated_duplications  , found_insertions, margin)
-                were_translocations = calculate_breakpoints_classified_as_insertions(generated_translocations_f, found_insertions, margin)
-                were_tr_ins =         calculate_all_insertions(generated_translocations_t, found_insertions, margin)
-                if 0 != int_or_0(were_translocations) and 0 != int_or_0(were_tr_ins):
-                    were_translocations = were_translocations + were_tr_ins #ugly, but will prevent adding strings to ints
-                were_insertions     = calculate_all_insertions(generated_insertions, found_insertions, margin)
-                FalsePositive = calculate_invalid_breakpoint([generated_deletions, generated_inversions, generated_duplications, generated_translocations_f, generated_translocations_t, generated_insertions], found_insertions, margin)
-
-                name = f"INS - {len(found_insertions)}"
-                print(f"[{name:10}] {were_deletions:3}, {were_inversions:3}, {were_duplications:3}, {were_insertions:3}, {were_translocations:3}, {FalsePositive:4}| [prec={prec:2}%; margin={margin:2}bp]")
-        
-    if found_translocations:
-        for prec, margin in zip([99,95,80],[1,10,70]):
-                were_deletions      = " X "
-                were_inversions     = " X "
-                were_duplications   = " X "
-                were_insertions     = " X "
-                were_translocations = calculate_all_translocations(generated_translocations, found_translocations, prec, margin)
-                FalsePositive = len(found_translocations) - int_or_0(were_deletions) - int_or_0(were_inversions) - int_or_0(were_duplications) - int_or_0(were_translocations) - int_or_0(were_insertions)
-    
-                name = f" TRN - {len(found_translocations)}"
-                print(f"[{name:10}] {were_deletions:3}, {were_inversions:3}, {were_duplications:3}, {were_insertions:3}, {were_translocations:3}, {FalsePositive:4}| [prec={prec:2}%; margin={margin:2}bp]")
 
 def check_sv_benchmark(generated_dir, detected_dir):
     exceptions = []
