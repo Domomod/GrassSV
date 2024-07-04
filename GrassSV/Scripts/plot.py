@@ -36,7 +36,7 @@ style_scheme = {
     '(Were)\nDuplications':                 {'color': '#2c83db', 'hatch': '///', 'edgecolor': '#a8c6f3',     'textcolor' : 'black', 'textformat' : '', 'textposition' : -4,    'textalways' : False},
     '(Were)\nInsertions':                   {'color': '#58db2c', 'hatch': '///', 'edgecolor': '#b3ec9f',     'textcolor' : 'black', 'textformat' : '', 'textposition' : -4,    'textalways' : False},
     '(Were)\nTranslocations':               {'color': '#be2cdb', 'hatch': '///', 'edgecolor': '#e6b3f2',     'textcolor' : 'black', 'textformat' : '', 'textposition' : -4,    'textalways' : False},
-    'False Positive':                       {'color': '#db8686', 'hatch': '///' , 'edgecolor': '#999999',     'textcolor' : 'black', 'textformat' : 'FN=', 'textposition' : +5, 'textalways' : True}
+    'False Positive':                       {'color': '#db8686', 'hatch': '///' , 'edgecolor': '#999999',     'textcolor' : 'black', 'textformat' : 'FP=', 'textposition' : +5, 'textalways' : True}
 }
 
 legend1 = {
@@ -79,9 +79,9 @@ def extract_data2(entries):
         for entry_type, value in entry_values.items():
             label = type_map[entry_type]
             if sv_label == 'BND':
-                data[label]['BND'] = (value)
+                data[label]['BND'] = sanitize_func(value)
             elif label == sv_label: #
-                data[sv_label][label] = (value)
+                data[sv_label][label] = sanitize_func(value)
             else:
                 sanitized_value = sanitize_func(value)
                 if sanitized_value != 0:
@@ -92,10 +92,12 @@ def extract_data2(entries):
             data[sv_label]['False Positive'] += sanitize_func(entry.false_positive)
 
     for dictionary in data.values():
+        pprint(dictionary)
         dictionary['False Negative'] = 100 - sum([dictionary[key] for key in series2])
 
     # pprint(data)
     return data
+    
     
 width = 0.08
 spacing = 0.12

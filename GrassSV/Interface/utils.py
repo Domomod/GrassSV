@@ -10,6 +10,7 @@ CHECH_SV_BR = "check_sv_br"
 CHECH_SV_BENCHMARK = "check_sv_benchmark"
 PLOT_PRECISION = "plot_precision"
 VENN_DIAGRAM = "venn_diagram"
+BENCHMARK_VENN_DIAGRAM = "benchmark_venn_diagram"
 
 def add_subparser(subparsers):
     utils = subparsers.add_parser(TEXT, help='Utilities [csv2bed, sv_check]',
@@ -86,6 +87,19 @@ def add_subparser(subparsers):
     venn_diagram.add_argument('--ground_truth', type=str, metavar='path', help='Path to direcotry containing detected mutations', required=True)
 
 
+    benchmark_venn_diagram = utils_subparer.add_parser(BENCHMARK_VENN_DIAGRAM, 
+                                    formatter_class=argparse.RawTextHelpFormatter,
+                                    help="Create a precision recall plot",
+                                    description="\033[1;36m"
+                                                "Creates a plot.\n"
+                                                "\033[0m")
+
+
+    benchmark_venn_diagram.add_argument('--set1', type=str, metavar='path', help='Path to directory containing mutations', required=True)
+    benchmark_venn_diagram.add_argument('--set2', type=str, metavar='path', help='Path to direcotry containing mutations', required=True)
+    benchmark_venn_diagram.add_argument('--set3', type=str, metavar='path', help='Path to direcotry containing mutations', required=True)
+
+
 def action(args):
     if args.utils_action == CSV2BED:
         csv2bed.export_to_bed(input_path= args.vcf, output_path = args.bed)
@@ -104,4 +118,7 @@ def action(args):
         pass
     elif args.utils_action == VENN_DIAGRAM:
         venn_diagram.venn_diagram(args.set1, args.set2, args.set3, args.set4, args.ground_truth)
+        pass
+    elif args.utils_action == BENCHMARK_VENN_DIAGRAM:
+        venn_diagram.benchmark_venn_diagram(args.set1, args.set2, args.set3)
         pass
