@@ -290,12 +290,22 @@ def calculate_all(generated, FOUND, precision, margin, specific_calculations=Non
 
 def process_data(name, calculations, FOUND_len, precision, margin, collected_data):
     false_positive = FOUND_len - sum(map(int_or_0, calculations.values()))
-    
+
     print(f"[{name:10}] {calculations['deletions']:3}, {calculations['inversions']:3}, {calculations['duplications']:3}, {calculations['insertions']:3}, {calculations['translocations']:3}, {false_positive:4}| [prec={precision:2}%; margin={margin:2}bp]")
     collected_data[margin].append(CollectedData(name[:3], name[6:], calculations['deletions'], calculations['inversions'], calculations['duplications'], calculations['insertions'], calculations['translocations'], false_positive))
 
 def process_type(precision, margin, TYPE, FOUND, LEN, generated, collected_data_list):
     calculations = calculate_all(generated, FOUND, precision, margin)
+    export = []
+    for found in FOUND:
+        if found.true_positive == False:
+            export.append(found)
+    export_records(export, f"gridss/false_positives/{TYPE}.bed")
+    export = []
+    for found in FOUND:
+        if found.true_positive == True:
+            export.append(found)
+    export_records(export, f"gridss/true_positives/{TYPE}.bed")
     process_data(TYPE, calculations, LEN, precision, margin, collected_data_list)
 
 def process_found_insertions(precision, margin, TYPE, FOUND, LEN, generated, collected_data_list):

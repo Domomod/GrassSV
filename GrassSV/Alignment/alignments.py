@@ -73,6 +73,7 @@ class Pattern(ConvertableToBed, SupportConvertableToBed):
         self.end: int = end
         self.size: int = end - start + 1
         self.supporting_alignments = supporting_alignments
+        self.true_positive = False #Used for exporting false postives for IGV in check_sv.py
 
     def __eq__(self, other):
         return self.start == other.start and self.end == other.end and self.chromosome == other.chromosome

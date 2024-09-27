@@ -160,7 +160,30 @@ def filter_breakpoints_by_ground_truth(bp_set, ground_truth, margin=70):
             valid_bps.add(bp)
         else:
             invalid_bps.add(bp)
-    return valid_bps, invalid_bps
+    return remove_duplicates(valid_bps), invalid_bps
+
+def remove_duplicates(breakpoints, margin=70):
+    """
+    Remove duplicate breakpoints from a set based on a specified margin.
+    
+    Parameters:
+    breakpoints: A list of Pattern objects containing breakpoint information.
+    margin: The margin within which breakpoints are considered duplicates.
+    
+    Returns:
+    A list of unique Pattern objects representing breakpoints.
+    """
+    unique_breakpoints = []
+    for i, bp1 in enumerate(breakpoints):
+        is_duplicate = False
+        for bp2 in unique_breakpoints:
+            if is_within_margin(bp1, bp2, margin):
+                is_duplicate = True
+                break
+        if not is_duplicate:
+            unique_breakpoints.append(bp1)
+    
+    return unique_breakpoints
 
 def venn_diagram(set1_path, set2_path, set3_path, set4_path, ground_truth_path):
     """
@@ -183,14 +206,14 @@ def venn_diagram(set1_path, set2_path, set3_path, set4_path, ground_truth_path):
 
     # Plot Venn diagram for valid sets
     print("Valid breakpoints Venn Diagram")
-    plot_venn_diagram(['grass_sv', 'gridss', 'pindel', 'lumpy'], [set1_valid, set2_valid, set3_valid, set4_valid])
+    plot_venn_diagram(['GRIDSS', 'GrassSV', 'Lumpy', 'Pindel'], [set1_valid, set2_valid, set3_valid, set4_valid])
     plt.title('Valid Breakpoints')
     plt.savefig('valid_breakpoints.png')
     plt.show()
 
     # Plot Venn diagram for invalid sets
     print("Invalid breakpoints Venn Diagram")
-    plot_venn_diagram(['grass_sv', 'gridss', 'pindel', 'lumpy'], [set1_invalid, set2_invalid, set3_invalid, set4_invalid])
+    plot_venn_diagram(['GRIDSS', 'GrassSV', 'Lumpy', 'Pindel'], [set1_invalid, set2_invalid, set3_invalid, set4_invalid])
     plt.title('Invalid Breakpoints')
     plt.savefig('invalid_breakpoints.png')
     plt.show()
@@ -205,13 +228,13 @@ def benchmark_venn_diagram(set1_path, set2_path, set3_path):
     Parameters:
     set1_path, set2_path, ground_truth_path: Paths to the BED files for each set.
     """
-    set1 = set(load_pattern_bed(set1_path))
-    set2 = set(load_pattern_bed(set2_path))
+    set1 = remove_duplicates(set(load_pattern_bed(set1_path)))
+    set2 = remove_duplicates(set(load_pattern_bed(set2_path)))
     set3 = set(load_pattern_bed(set3_path))
 
     # Plot Venn diagram for valid sets
     print("Valid breakpoints Venn Diagram")
-    plot_venn_diagram(['GrassSv', 'Gridss', 'giab-benchmark'], [set1, set2, set3])
-    plt.title('Valid Breakpoints')
+    plot_venn_diagram(['GRIDSS', 'GrassSV', 'GIAB'], [set1, set2, set3])
+    plt.title('Breakpoints')
     plt.savefig('valid_breakpoints.png')
     plt.show()

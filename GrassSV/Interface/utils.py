@@ -1,6 +1,6 @@
 import argparse, argcomplete, textwrap
 
-from GrassSV.Scripts import csv2bed, check_sv, check_breakpoint, plot, venn_diagram
+from GrassSV.Scripts import csv2bed, check_sv, check_breakpoint, plot, plot2, venn_diagram
 
 TEXT = 'utils'
 
@@ -114,7 +114,8 @@ def action(args):
         check_sv.check_sv_benchmark(detected_dir = args.detected, generated_dir = args.benchmark )
         pass
     elif args.utils_action == PLOT_PRECISION:
-        plot.plot_data()
+        plot.plot_bar_diagram()
+        # plot2.plot_bar_diagram()
         pass
     elif args.utils_action == VENN_DIAGRAM:
         venn_diagram.venn_diagram(args.set1, args.set2, args.set3, args.set4, args.ground_truth)
