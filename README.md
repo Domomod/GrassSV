@@ -22,7 +22,7 @@ positional arguments:
     utils               Utilities [csv2bed, sv_check]
 ```
 
-#Running without Slurm
+# Running without Slurm
 
 To detect structural variants (SVs) using GrassSV, follow these steps:
 
@@ -31,9 +31,20 @@ To detect structural variants (SVs) using GrassSV, follow these steps:
 3. Run GrassSV filter_reads – this will filter out reads that are unlikely to provide information about SVs.
 4. Assemble the filtered reads into contigs (e.g., using the ALGA assembler).
 5. Map the filtered contigs to the reference genome.
-5. Run GrassSV find_sv – this will produce SV calls with annotated variant types.
+6. Run GrassSV find_sv – this will produce SV calls with annotated variant types.
 
-#Running with SLURM
+## Run steps 1-6 with GrassSV.py run_standalone [Recommmended] 
+Steps 1-6 can be simplified as one call.
+`GrassSV.py run_standalone -g ${CX_REFERENCE} -i ${CX_INDEX} -l ${CX_REFERENCE_LENGTH} -r ${CX_READS_1} -R ${CX_READS_2}`
+
+With `CX_REFERENCE` leading to reference genome file (.fai), `CX_INDEX` leading to genoe index file, `CX_REFERENCE_LENGTH` leading to genome lengths file. `CX_READS_1` and `CX_READS_1` should lead to FASTQ (.fq) formated reads. 
+
+The script is available in `origin/docker` branch of this repository.
+
+### GrassSV.py run_standalone Script Requrements
+ALGA, samtools(1.6.0), bowtie1(1.0.0), bowtie2(2.2.3), gcc(7.4.0), quast(5.0.2) 
+
+# Running with SLURM
 Running GrassSV is simpler with SLURM, only one command is needed. 
 
 ```
@@ -65,3 +76,6 @@ To run GrassSV on your data type:
 ```
 GrassSV.py slurm_dispatch -S CALC_DEPTH
 ```
+
+# Benchmarking on a test dataset
+GrassSV was tested against following SV Callers: Pindel, Lumpy and GRIDSS. Benchmark code alongside benchmarking data can be found at GrassBenchmark repository: https://github.com/Domomod/GrassBenchmark.
