@@ -22,7 +22,7 @@ positional arguments:
     utils               Utilities [csv2bed, sv_check]
 ```
 
-#Running without Slurm
+# Running without Slurm
 
 To detect structural variants (SVs) using GrassSV, follow these steps:
 
@@ -33,7 +33,7 @@ To detect structural variants (SVs) using GrassSV, follow these steps:
 5. Map the filtered contigs to the reference genome.
 5. Run GrassSV find_sv – this will produce SV calls with annotated variant types.
 
-#Running with SLURM
+# Running with SLURM
 Running GrassSV is simpler with SLURM, only one command is needed. 
 
 ```
