@@ -97,17 +97,17 @@ scriptDir=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")/Bash
 module load python/3.9.2
 echo $PATH > path.txt
 
-# echo "[+] calculate_depth:"
-# $scriptDir/calculate_depth.sh
-# echo "[+] find_roi:"
-# GrassSV.py find_roi ${coverage_file} ${roi} ${coverage} -m ${margin} > ${work_dir}/find_roi.txt
+echo "[+] calculate_depth:"
+$scriptDir/calculate_depth.sh
+echo "[+] find_roi:"
+GrassSV.py find_roi ${coverage_file} ${roi} ${coverage} -m ${margin} > ${work_dir}/find_roi.txt
 echo "[+] fastq_regions:"
 GrassSV.py filter_reads -f1 ${filtered_reads1} -f2 ${filtered_reads2} -s ${alignments_file} -ss ${alignments_sorted} -roi ${roi} > ${work_dir}/filter_reads.txt
-# echo "[+] Alga:"
-# $scriptDir/run_alga.sh > ${work_dir}/run_alga.txt
-# echo "[+] Quast:"
-# $scriptDir/run_quast.sh > ${work_dir}/run_quast.txt
-# echo "[+] find_sv:"
-# GrassSV.py find_sv ${quast_alignments} -o ${results} > ${work_dir}/find_sv.txt
-# echo "[+] find_hdr:"
-# GrassSV.py find_hdr ${coverage_file} ${results}/duplications.bed  > ${work_dir}/find_hdr.txt
+echo "[+] Alga:"
+$scriptDir/run_alga.sh > ${work_dir}/run_alga.txt
+echo "[+] Quast:"
+$scriptDir/run_quast.sh > ${work_dir}/run_quast.txt
+echo "[+] find_sv:"
+GrassSV.py find_sv ${quast_alignments} -o ${results} > ${work_dir}/find_sv.txt
+echo "[+] find_hdr:"
+GrassSV.py find_hdr ${coverage_file} ${results}/duplications.bed  > ${work_dir}/find_hdr.txt
