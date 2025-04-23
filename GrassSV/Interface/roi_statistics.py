@@ -1,4 +1,4 @@
-import argparse, argcomplete
+import argparse#, argcomplete
 from GrassSV.Scripts import roi_statistics
 
 TEXT = 'roi_statistics'

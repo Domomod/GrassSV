@@ -1,4 +1,4 @@
-import argparse, argcomplete
+import argparse#, argcomplete
 from GrassSV.Scripts import find_roi
 
 TEXT = 'find_roi'

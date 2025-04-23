@@ -1,4 +1,4 @@
-import argparse, argcomplete
+import argparse#, argcomplete
 from GrassSV.Scripts import contig_statistics
 
 TEXT = 'contig_statistics'

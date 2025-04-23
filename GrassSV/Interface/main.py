@@ -1,4 +1,4 @@
-import argparse, argcomplete
+import argparse#, argcomplete
 import traceback
 from GrassSV.Interface import rsvsim2bed, find_sv, find_roi, roi_statistics, quast2bed, filter_reads, slurm_dispatch, find_hdr, run_standalone, utils
 
@@ -21,7 +21,7 @@ def run():
         run_standalone.add_subparser(subparsers)
         utils.add_subparser(subparsers)
 
-        argcomplete.autocomplete(parser)
+        #argcomplete.autocomplete(parser)
         args = parser.parse_args()
 
         if args.action == find_sv.TEXT:

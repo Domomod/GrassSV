@@ -1,4 +1,4 @@
-import argparse, argcomplete
+import argparse#, argcomplete
 from GrassSV.Alignment import  run
 
 TEXT = 'find_sv'
