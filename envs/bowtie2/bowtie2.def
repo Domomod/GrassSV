@@ -1,0 +1,60 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%files
+    bowtie2.yaml /bowtie2.yaml
+
+%post
+    apt-get update
+    apt-get install time
+    # Create a conda environment and install bowtie
+    conda env create -f /bowtie2.yaml
+    conda clean -a -y
+
+%environment
+    # Activate the conda environment by default
+    export PATH="/opt/conda/envs/bowtie2/bin:/opt/conda/bin:$PATH"
+
+%labels
+    Maintainer Dominik Witczak <dominik.piotr.witczak@gmail.com>
+    Description Installs bowtie2 within a Conda environment.
+
+%test
+    echo "Running tests for bowtie2 installation..."
+
+    # Test /usr/bin/time
+    /usr/bin/time --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "/usr/bin/time is working correctly."
+    else
+        echo "Error: /usr/bin/time is not working!"
+        exit 1
+    fi
+
+    # Check if the 'bowtie2' environment directory exists
+    if [ -d "/opt/conda/envs/bowtie2" ]; then
+        echo "Conda environment 'bowtie2' exists."
+    else
+        echo "Error: Conda environment 'bowtie2' not found!"
+        exit 1 # Exit with a non-zero code to indicate failure
+    fi
+
+    # Check if the bowtie2 executable is in the expected PATH
+    which bowtie2 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "bowtie2 executable found in PATH."
+    else
+        echo "Error: bowtie2 executable not found in PATH!"
+        exit 1
+    fi
+
+    # Run a simple bowtie2 command to check if it executes
+    bowtie2 --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "bowtie2 --version executed successfully."
+    else
+        echo "Error: Failed to execute bowtie2 --version!"
+        exit 1
+    fi
+
+    echo "All tests passed!"

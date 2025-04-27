@@ -1,0 +1,25 @@
+Bootstrap: docker
+From: ubuntu:jammy-20220531
+
+%post
+    apt-get update -y
+    apt-get install -y \
+        cmake \
+        g++ \
+        wget \
+        zip \
+        vim \
+        libz-dev \
+        time
+    wget https://github.com/swacisko/ALGA/archive/refs/tags/1.0.3.zip
+    unzip 1.0.3.zip
+    mkdir ALGA-1.0.3/build
+    cd ALGA-1.0.3/build
+    cmake ..
+    make
+    cp ALGA /usr/local/bin/  # Ensure ALGA binary is copied to a directory in PATH
+
+
+%environment
+    PATH=/usr/local/bin:$PATH  # Add any necessary paths
+    

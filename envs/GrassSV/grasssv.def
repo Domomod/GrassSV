@@ -1,0 +1,25 @@
+Bootstrap: docker
+From: ubuntu:jammy-20220531
+
+%files
+grasssv.yaml /grasssv.yaml
+../../GrassSV /usr/local/bin/GrassSV
+../../GrassSV.py /usr/local/bin/GrassSV.py
+
+%post
+    apt-get update -y
+    DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential libssl-dev libffi-dev python3 libblas3 libc6 liblapack3 gcc python3-dev python3-pip cython3
+    DEBIAN_FRONTEND=noninteractive apt-get -y install python3-numpy python3-sklearn
+    DEBIAN_FRONTEND=noninteractive apt-get -y install python3-pandas python3-argcomplete time
+    
+    chmod -R 777 /usr/local/bin/GrassSV 
+    chmod -R 777 /usr/local/bin/GrassSV.py
+
+%environment
+    # Activate the conda environment by default
+    export PATH="/opt/conda/envs/grasssv/bin:/opt/conda/bin:$PATH"
+    export PYTHONPATH="/usr/local/share/GrassSV :$PYTHONPATH"
+
+%labels
+    Maintainer Dominik Witczak <dominik.piotr.witczak@gmail.com>
+    Description Installs bowtie2 within a Conda environment.   

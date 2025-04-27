@@ -1,0 +1,62 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%files
+    quast.yaml /quast.yaml
+
+%post
+    apt-get update
+    apt-get install time
+    # Create a conda environment and install quast
+    conda env create -f /quast.yaml
+    conda clean -a -y
+
+%environment
+    apt-get update
+    apt-get install time
+    # Activate the conda environment by default
+    export PATH="/opt/conda/envs/quast/bin:/opt/conda/bin:$PATH"
+
+%labels
+    Maintainer Dominik Witczak <dominik.piotr.witczak@gmail.com>
+    Description Installs quast within a Conda environment.
+
+%test
+    echo "Running tests for quast installation..."
+
+    # Test /usr/bin/time
+    /usr/bin/time --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "/usr/bin/time is working correctly."
+    else
+        echo "Error: /usr/bin/time is not working!"
+        exit 1
+    fi
+
+    # Check if the 'quast' environment directory exists
+    if [ -d "/opt/conda/envs/quast" ]; then
+        echo "Conda environment 'quast' exists."
+    else
+        echo "Error: Conda environment 'quast' not found!"
+        exit 1
+    fi
+
+    # Check if the quast executable is in the expected PATH
+    which quast > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "quast executable found in PATH."
+    else
+        echo "Error: quast executable not found in PATH!"
+        exit 1
+    fi
+
+    # Run a simple quast command to check if it executes
+    quast --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "quast --version executed successfully."
+    else
+        echo "Error: Failed to execute quast --version!"
+        exit 1
+    fi
+
+    echo "All tests passed!"

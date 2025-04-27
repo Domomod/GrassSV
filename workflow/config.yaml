@@ -1,0 +1,11 @@
+run:
+  name: "example"
+  description: "Example GrassSV pipeline run configuration - fill in the values"
+  version: "0.1.0"
+  date: "2025-04-23"
+  projectdir: "<projectdir>"
+  genome:  "<path>/ref.fastq"
+  input:   "<path-with-reads.fastq>"
+  workdir: "<ex.scratch-dir>/runs/grasssv"
+  logs:    "<workdir>/runs/grasssv"
+  results: "<workdir>/runs/grasssv/"

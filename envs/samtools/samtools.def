@@ -1,0 +1,60 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%files
+    samtools.yaml /samtools.yaml
+
+%post
+    apt-get update
+    apt-get install time
+    # Create a conda environment and install samtools
+    conda env create -f /samtools.yaml
+    conda clean -a -y
+
+%environment
+    # Activate the conda environment by default
+    export PATH="/opt/conda/envs/samtools/bin:/opt/conda/bin:$PATH"
+
+%labels
+    Maintainer Dominik Witczak <dominik.piotr.witczak@gmail.com>
+    Description Installs samtools within a Conda environment.
+
+%test
+    echo "Running tests for samtools installation..."
+
+    # Test /usr/bin/time
+    /usr/bin/time --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "/usr/bin/time is working correctly."
+    else
+        echo "Error: /usr/bin/time is not working!"
+        exit 1
+    fi
+
+    # Check if the 'samtools' environment directory exists
+    if [ -d "/opt/conda/envs/samtools" ]; then
+        echo "Conda environment 'samtools' exists."
+    else
+        echo "Error: Conda environment 'samtools' not found!"
+        exit 1
+    fi
+
+    # Check if the samtools executable is in the expected PATH
+    which samtools > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "samtools executable found in PATH."
+    else
+        echo "Error: samtools executable not found in PATH!"
+        exit 1
+    fi
+
+    # Run a simple samtools command to check if it executes
+    samtools --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "samtools --version executed successfully."
+    else
+        echo "Error: Failed to execute samtools --version!"
+        exit 1
+    fi
+
+    echo "All tests passed!"
