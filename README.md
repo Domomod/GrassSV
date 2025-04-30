@@ -69,23 +69,15 @@ The snakemake pipeline is run from withing GrassSV main repository folder using 
 
 To run the pipeline **on slurm enviroment** (in cases where singularity/apptainer is not avialable on login node) try:
 
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.eagle/`
+  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.slurm.apptainer.generic/`
 
 To run the pipeline **on slurm enviroments** run:
 
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.eagle/`
+  `snakemake --configfile workflow/config_SoftwareX.yaml --sdm workflow/profile.slurm.apptainer`
 
 To run the pipeline **without an executor** (can be run sequentioally or paraller using multiple cores) try:
 
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.eagle/`
-
-**(NOT-TESTED)** To run the pipeline **using conda enviroments**, try:
-
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.slurm.conda/`
-
-**(NOT-TESTED)** To run the pipeline **using enviroments modules**, try:
-
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.envmodules/`
+  `snakemake --configfile workflow/config_SoftwareX.yaml --sdm apptainer`
 
 *To run the pipeline on any other enviroment:*
 
