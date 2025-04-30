@@ -1,0 +1,11 @@
+run:
+  name: "softwareX"
+  description: "GrassSV pipeline run configuration"
+  version: "0.1.0"
+  date: "2025-04-23"
+  projectdir: "/mnt/storage_3/home/dwitczak/pl0423-01"
+  genome:  "project_data/Dominik/inputs/giab/ref.fsa"
+  input:   "project_data/Dominik/inputs/giab"
+  workdir: "scratch/Dominik/runs/grasssv"
+  logs:    "project_data/Dominik/runs/grasssv"
+  results: "project_data/Dominik/runs/grasssv/"

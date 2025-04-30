@@ -1,0 +1,11 @@
+run:
+  name: "data"
+  description: "GrassSV pipeline run configuration"
+  version: "0.1.0"
+  date: "2025-04-30"
+  projectdir: ""
+  genome:  "data/ref.fsa"
+  input:   "data"
+  workdir: ""
+  logs:    ""
+  results: ""

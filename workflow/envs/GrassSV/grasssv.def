@@ -3,8 +3,8 @@ From: ubuntu:jammy-20220531
 
 %files
 grasssv.yaml /grasssv.yaml
-../../GrassSV /usr/local/bin/GrassSV
-../../GrassSV.py /usr/local/bin/GrassSV.py
+../../../GrassSV /usr/local/bin/GrassSV
+../../../GrassSV.py /usr/local/bin/GrassSV.py
 
 %post
     apt-get update -y
