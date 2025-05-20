@@ -61,8 +61,12 @@ rule BuildIndex:
         slurm=LOGS_DIR+"/build_index"
     container:
         "envs/bowtie2/bowtie2.sif"
+    envmodules: 
+        "bowtie2"
+    conda:
+        "envs/bowtie2/bowtie2.yaml"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "bowtie2-build {input} "+WORK_DIR+"/index"
 
 rule AlignReads:
@@ -79,8 +83,12 @@ rule AlignReads:
         time=LOGS_DIR+"/AlignReads/align_reads.{sample}.time"
     container:
         "envs/bowtie2/bowtie2.sif"
+    envmodules:
+        "bowtie2"
+    conda:
+        "envs/bowtie2/bowtie2.yaml"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "bowtie2 -x data/index -1 {input.forward_read} -2 {input.reverse_read} -S {output} 1> {log.out} 2> {log.err}"
 
 rule SortAlignments:
@@ -95,8 +103,12 @@ rule SortAlignments:
         time=LOGS_DIR+"/AlignReads/sort_alignments.{sample}.time"
     container:
         "envs/samtools/samtools.sif"
+    envmodules:
+        "samtools"
+    conda:
+        "envs/samtools/samtools.yaml"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "samtools sort {input} -O SAM -o {output} 1> {log.out} 2> {log.err}"
 
 rule CalculateDepth:
@@ -110,8 +122,12 @@ rule CalculateDepth:
         time=LOGS_DIR+"/CalculateDepth/{sample}.time"
     container:
         "envs/samtools/samtools.sif"
+    envmodules:
+        "samtools"
+    conda:
+        "envs/samtools/samtools.yaml"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "samtools depth -a {input} > {output} 2> {log.err}"
 
 rule SumDepth:
@@ -124,8 +140,9 @@ rule SumDepth:
         slurm=LOGS_DIR+"/CalculateDepth/sum_depth.slurm",
         time=LOGS_DIR+"/CalculateDepth/sum_depth.time"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
-        "awk '{{sum=0; for(i=3; i<=NF; i+=3) sum+=$i; print $1, $2, sum}}' {input} > {output}"
+        "paste {input} | " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
+        "awk '{{sum=0; for(i=3; i<=NF; i+=3) sum+=$i; print $1, $2, sum}}' > {output}"
 
 rule FindRegionsOfInterest:
     input:
@@ -138,7 +155,7 @@ rule FindRegionsOfInterest:
         slurm=LOGS_DIR+"/FilterReads/find_regions_of_interest.slurm",
         time=LOGS_DIR+"/FilterReads/find_regions_of_interest.time"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "GrassSV.py find_roi {input.depth} {output} 10 -m 150 1> {log.out} 2> {log.err}"
 
 rule FilterRegions:
@@ -156,8 +173,10 @@ rule FilterRegions:
         err=LOGS_DIR+"/FilterReads/filter_regions.{sample}.err",
         slurm=LOGS_DIR+"/FilterReads/filter_regions.{sample}.slurm",
         time=LOGS_DIR+"/FilterReads/filter_regions.{sample}.time"
+    container:
+        "envs/GrassSV/grasssv.sif"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "GrassSV.py filter_reads -f1 {output.forward_reads} -f2 {output.reverse_reads} -s {input.alignments} -ss {input.alignments_sorted} -roi {input.regions_of_interest} 1> {log.out} 2> {log.err}"
 
 rule AggregateFilteredReads:
@@ -188,7 +207,7 @@ rule AssembleContigs:
     container:
         "envs/ALGA/alga.sif"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "ALGA --threads=8 --file1 {input.forward_reads} --file2 {input.reverse_reads} --output "+WORK_DIR+"/AssembleContigs/alga 1> {log.out} 2> {log.err}"
 
 rule AlignContigs:
@@ -205,8 +224,12 @@ rule AlignContigs:
         time=LOGS_DIR+"/AssembleContigs/align_contigs.time"
     container:
         "envs/quast/quast.sif"
+    envmodules:
+        "quast"
+    conda:
+        "envs/quast/quast.yaml"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "quast.py {input.contigs} -r {input.ref} -m 250 -o {output.quast_dir} 1> {log.out} 2> {log.err};"
 
 rule CallVariants:
@@ -220,6 +243,8 @@ rule CallVariants:
         err=LOGS_DIR+"/call_variants.err",
         slurm=LOGS_DIR+"/call_variants.slurm",
         time=LOGS_DIR+"/call_variants.time"
+    container:
+        "envs/GrassSV/grasssv.sif"
     shell:
-        "/usr/bin/time -o {log.time} -v " + \
+        ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "GrassSV.py find_sv {input.quast_alignments} -o {output.variant_calls} 1> {log.out} 2> {log.err};"

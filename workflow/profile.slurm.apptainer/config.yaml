@@ -1,0 +1,12 @@
+executor: slurm
+
+default-resources:
+  - mem_mb=250000
+max-jobs-per-second: 10
+max-status-checks-per-second: 1
+jobs: 500
+printshellcmds: True
+scheduler: greedy
+software-deployment-method:
+
+set-envmodules:

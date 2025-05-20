@@ -9,11 +9,11 @@ cluster-generic-submit-cmd:
     --error={log.slurm}.err
     --parsable
     --container {resources.container}
-cluster-generic-cancel-cmd: scancel {jobid}
+cluster-generic-cancel-cmd: scancel
 cluster-generic-status-cmd: status-sacct.sh
 
 default-resources:
-  - mem_mb=150000
+  - mem_mb=250000
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
 local-cores: 1
@@ -23,33 +23,27 @@ keep-going: True
 rerun-incomplete: True
 printshellcmds: True
 scheduler: greedy
-use-conda: True
 set-resources:
   BuildIndex:
-    container: "envs/bowtie2/bowtie2.sif"
+    container: "workflow/envs/bowtie2/bowtie2.sif"
   AlignReads:
-    container: "envs/bowtie2/bowtie2.sif"
+    container: "workflow/envs/bowtie2/bowtie2.sif"
   SortAlignments:
-    container: "envs/samtools/samtools.sif"
+    container: "workflow/envs/samtools/samtools.sif"
   CalculateDepth:
-    container: "envs/samtools/samtools.sif"
+    container: "workflow/envs/samtools/samtools.sif"
   SumDepth:
-    container: "envs/samtools/samtools.sif"
+    container: "workflow/envs/samtools/samtools.sif"
     mem_mb: 400000
   FindRegionsOfInterest:
-    container: "envs/GrassSV/grasssv.sif"
+    container: "workflow/envs/GrassSV/grasssv.sif"
   FilterRegions:
-    mem_mb: 10000
-    container: "envs/GrassSV/grasssv.sif"
+    container: "workflow/envs/GrassSV/grasssv.sif"
   AggregateFilteredReads:
-    mem_mb: 10000
-    container: "envs/GrassSV/grasssv.sif"
+    container: "workflow/envs/GrassSV/grasssv.sif"
   AssembleContigs:
-    mem_mb: 10000
-    container: "envs/ALGA/alga.sif"
+    container: "workflow/envs/ALGA/alga.sif"
   AlignContigs:
-    mem_mb: 10000
-    container: "envs/quast/quast.sif"
+    container: "workflow/envs/quast/quast.sif"
   CallVariants:
-    mem_mb: 5000
-    container: "envs/GrassSV/grasssv.sif"
+    container: "workflow/envs/GrassSV/grasssv.sif"
