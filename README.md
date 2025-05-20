@@ -28,6 +28,28 @@ The below diagram illustrates the idea standing behind GrassSV redcution of asse
   <img src="grasssv.png" alt="GrassSV Logo">
 </p>
 
+# Prerequsites 
+We recomend to install snakemake via conda package manager.
+## Install a conda package manager
+Any conda envirment will do - you can install miniforge with the following commands:
+
+`wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" miniforge_installer.sh`
+
+`bash miniforge_installer.sh -b -p $HOME`
+
+## Create a conda enviroment to run snakemake
+```
+conda create -c conda-forge -c bioconda -n snakemake snakemake
+conda activate snakemake
+conda install snakemake-executor-plugin-slurm
+conda install snakemake-executor-generic-slurm
+```
+## Install apptainer
+For HPC - apptainer should be already installed by your server administrator. On personal PC you can install it through your OS packagae manager. 
+
+On ubuntu: `sudo apt install -y apptainer`
+
+
 # Reproductible execution enviroments:
 ```
 workflow
@@ -43,11 +65,16 @@ workflow
 │   └── samtools
 │       └── samtools.def
 ```
-Each of required tools comes with a predefined **apptainer** container definition that can be built by issuing `sudo singularity-build <xx>.sif <xx>.def`
+Each of required tools comes with a predefined **apptainer** container definition that can be built by issuing `sudo singularity-build <xx>.sif <xx>.def` or `apptainer build <xx>.sif <xx>.def` depending on your apptainer/singularity version.
 
 Here is a one liner loop to install all the enviroments - run it from repository root directory:
 
+using singularity-build:
 ``(cd workflow/envs; for dir in bowtie2/bowtie2 quast/quast ALGA/alga GrassSV/grasssv samtools/samtools; do (d=$(dirname $dir); b=$(basename $dir); cd $d; yes | sudo singularity-build --force $b.sif $b.def); done
+)``
+
+using apptainer build:
+``(cd workflow/envs; for dir in bowtie2/bowtie2 quast/quast ALGA/alga GrassSV/grasssv samtools/samtools; do (d=$(dirname $dir); b=$(basename $dir); cd $d; yes | sudo apptainer build $b.sif $b.def); done
 )``
 
 
@@ -64,28 +91,18 @@ The snakemake pipeline is run from withing GrassSV main repository folder using 
 
 `snakemake --configfile config.yaml --profile profile_dir/`
 
-- **config.yaml** - should point to config defining your exact pipeline run (schema in next section)
-- **profile_dir/** - points to your platform configuration specific to your enviroment specification  
+- **config.yaml** - [**REQUIRED**] should point to config defining your exact pipeline run (schema in next section)
+- **profile_dir/** - [**OPTIONAL**] points to your platform configuration specific to your enviroment specification  
 
-To run the pipeline **on slurm enviroment** (in cases where singularity/apptainer is not avialable on login node) try:
+Here is the list of available profiles :
+```
+#For hpc try
+--profile workflow/profile.slurm.apptainer.generic/   (uses generic executor plugin)
+--profile workflow/profile.slurm.apptainer/           (uses slurm executor plugin)
 
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.eagle/`
-
-To run the pipeline **on slurm enviroments** run:
-
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.eagle/`
-
-To run the pipeline **without an executor** (can be run sequentioally or paraller using multiple cores) try:
-
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.eagle/`
-
-**(NOT-TESTED)** To run the pipeline **using conda enviroments**, try:
-
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.slurm.conda/`
-
-**(NOT-TESTED)** To run the pipeline **using enviroments modules**, try:
-
-  `snakemake --configfile workflow/config_SoftwareX.yaml --profile workflow/profile.envmodules/`
+#For desktop try
+--sdm apptainer --cores 8 --jobs 8                    (uses apptainer, but no slurm)
+```
 
 *To run the pipeline on any other enviroment:*
 
@@ -126,12 +143,25 @@ workdir: scratch-data/runs
 ```
 Will result in intermediate files being saved in "scratch-data/runs/sacharomyces_test_a"
 
+# Run GrassSV on benchmarking data
+Benchmarking data is available in `benchmark` subdirectory of this repository. To run the benchmark on your PC try:
+```
+conda activate snakemake
+snakemake --configfile workflow/benchmark.yaml --sdm apptainer --cores 8 --jobs 8
+```
+or if using slurm:
+```
+conda activate snakemake
+snakemake --configfile workflow/benchmark.yaml --profile workflow/slurm.apptainer.generic
+```
+
+
 # Running specific GrassSV manually:
 
 To detect structural variants (SVs) using GrassSV, follow these steps:
 
 1. Map your reads to the reference genome and calculate the depth of coverage.
-2. Run GrassSV find_roi – this will identify regions where SV breakpoints are suspected.
+2. Run GrassSV find_roi – this will identify regions w/` subdirectroy here SV breakpoints are suspected.
 3. Run GrassSV filter_reads – this will filter out reads that are unlikely to provide information about SVs.
 4. Assemble the filtered reads into contigs (e.g., using the ALGA assembler).
 5. Map the filtered contigs to the reference genome.
