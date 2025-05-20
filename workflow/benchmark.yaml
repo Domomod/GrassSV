@@ -1,0 +1,11 @@
+run:
+  name: "benchmark"
+  description: "Example GrassSV pipeline run configuration - benchmarking data"
+  version: "0.1.0"
+  date: "2025-05-20"
+  projectdir: "."
+  genome:  "benchmark/ref.fastq"
+  input:   "benchmark"
+  workdir: "benchmark/workdir"
+  logs:    "benchmark/logs"
+  results: "benchmark/results"

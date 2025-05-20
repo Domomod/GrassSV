@@ -60,11 +60,9 @@ rule BuildIndex:
         time=LOGS_DIR+"/build_index.time",
         slurm=LOGS_DIR+"/build_index"
     container:
-        "envs/bowtie2/bowtie2.sif"
+        "workflow/envs/bowtie2/bowtie2.sif"
     envmodules: 
         "bowtie2"
-    conda:
-        "envs/bowtie2/bowtie2.yaml"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "bowtie2-build {input} "+WORK_DIR+"/index"
@@ -82,14 +80,12 @@ rule AlignReads:
         slurm=LOGS_DIR+"/AlignReads/align_reads.{sample}.slurm",
         time=LOGS_DIR+"/AlignReads/align_reads.{sample}.time"
     container:
-        "envs/bowtie2/bowtie2.sif"
+        "workflow/envs/bowtie2/bowtie2.sif"
     envmodules:
         "bowtie2"
-    conda:
-        "envs/bowtie2/bowtie2.yaml"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
-        "bowtie2 -x data/index -1 {input.forward_read} -2 {input.reverse_read} -S {output} 1> {log.out} 2> {log.err}"
+        "bowtie2 -x "+WORK_DIR+"/index -1 {input.forward_read} -2 {input.reverse_read} -S {output} 1> {log.out} 2> {log.err}"
 
 rule SortAlignments:
     input:
@@ -102,11 +98,9 @@ rule SortAlignments:
         slurm=LOGS_DIR+"/AlignReads/sort_alignments.{sample}.slurm",
         time=LOGS_DIR+"/AlignReads/sort_alignments.{sample}.time"
     container:
-        "envs/samtools/samtools.sif"
+        "workflow/envs/samtools/samtools.sif"
     envmodules:
         "samtools"
-    conda:
-        "envs/samtools/samtools.yaml"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "samtools sort {input} -O SAM -o {output} 1> {log.out} 2> {log.err}"
@@ -121,11 +115,9 @@ rule CalculateDepth:
         slurm=LOGS_DIR+"/CalculateDepth/{sample}.slurm",
         time=LOGS_DIR+"/CalculateDepth/{sample}.time"
     container:
-        "envs/samtools/samtools.sif"
+        "workflow/envs/samtools/samtools.sif"
     envmodules:
         "samtools"
-    conda:
-        "envs/samtools/samtools.yaml"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "samtools depth -a {input} > {output} 2> {log.err}"
@@ -154,6 +146,8 @@ rule FindRegionsOfInterest:
         err=LOGS_DIR+"/FilterReads/find_regions_of_interest.err",
         slurm=LOGS_DIR+"/FilterReads/find_regions_of_interest.slurm",
         time=LOGS_DIR+"/FilterReads/find_regions_of_interest.time"
+    container:
+        "workflow/envs/GrassSV/grasssv.sif"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "GrassSV.py find_roi {input.depth} {output} 10 -m 150 1> {log.out} 2> {log.err}"
@@ -174,7 +168,7 @@ rule FilterRegions:
         slurm=LOGS_DIR+"/FilterReads/filter_regions.{sample}.slurm",
         time=LOGS_DIR+"/FilterReads/filter_regions.{sample}.time"
     container:
-        "envs/GrassSV/grasssv.sif"
+        "workflow/envs/GrassSV/grasssv.sif"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "GrassSV.py filter_reads -f1 {output.forward_reads} -f2 {output.reverse_reads} -s {input.alignments} -ss {input.alignments_sorted} -roi {input.regions_of_interest} 1> {log.out} 2> {log.err}"
@@ -205,7 +199,7 @@ rule AssembleContigs:
         slurm=LOGS_DIR+"/AssembleContigs/assemble_contigs.slurm",
         time=LOGS_DIR+"/AssembleContigs/assemble_contigs.time"
     container:
-        "envs/ALGA/alga.sif"
+        "workflow/envs/ALGA/alga.sif"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "ALGA --threads=8 --file1 {input.forward_reads} --file2 {input.reverse_reads} --output "+WORK_DIR+"/AssembleContigs/alga 1> {log.out} 2> {log.err}"
@@ -223,11 +217,9 @@ rule AlignContigs:
         slurm=LOGS_DIR+"/AssembleContigs/align_contigs.slurm",
         time=LOGS_DIR+"/AssembleContigs/align_contigs.time"
     container:
-        "envs/quast/quast.sif"
+        "workflow/envs/quast/quast.sif"
     envmodules:
         "quast"
-    conda:
-        "envs/quast/quast.yaml"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "quast.py {input.contigs} -r {input.ref} -m 250 -o {output.quast_dir} 1> {log.out} 2> {log.err};"
@@ -244,7 +236,7 @@ rule CallVariants:
         slurm=LOGS_DIR+"/call_variants.slurm",
         time=LOGS_DIR+"/call_variants.time"
     container:
-        "envs/GrassSV/grasssv.sif"
+        "workflow/envs/GrassSV/grasssv.sif"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
         "GrassSV.py find_sv {input.quast_alignments} -o {output.variant_calls} 1> {log.out} 2> {log.err};"

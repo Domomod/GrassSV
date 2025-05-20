@@ -3,6 +3,9 @@
 workflow/envs/
 !workflow/envs/*.yaml
 !workflow/envs/*.def
+benchmark/logs/
+benchmark/results/
+benchmark/workdir/
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,linux,pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,linux,pycharm
