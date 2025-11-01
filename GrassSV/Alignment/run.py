@@ -18,7 +18,8 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
     alignment_insertions = alignment_patterns["insertions"]
     contig_insertions = contig_patterns.insertions
-    insertions = contig_insertions + alignment_insertions
+    insertions = contig_insertions
+    low_confidence_insertions = alignment_insertions
 
     inversions_filtered = filter_inversions(contig_patterns.inversions)
 
@@ -32,6 +33,7 @@ def run(contig_paths, output_folder_path='', export_patterns=False, export_suppo
 
     #Raport
     export_records(insertions, f"{output_folder_path}/detectedSVs/insertions.bed")
+    export_records(low_confidence_insertions, f"{output_folder_path}/detectedSVs/low_confidence_insertions.bed")
     export_records(inversions_filtered, f"{output_folder_path}/detectedSVs/inversions.bed")
     export_records(deletions, f"{output_folder_path}/detectedSVs/deletions.bed")
     #export_records(duplications, f"{output_folder_path}/detectedSVs/duplications.bed")

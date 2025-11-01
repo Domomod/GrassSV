@@ -9,3 +9,5 @@ run:
   workdir: "<ex.scratch-dir>/runs/grasssv"
   logs:    "<workdir>/runs/grasssv"
   results: "<workdir>/runs/grasssv/"
+  margin: 150
+  min_depth: 12

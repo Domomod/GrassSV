@@ -25,7 +25,7 @@ def find_alignment_patterns(alignments):
     for first, second in pairwise(alignments):
         same_chromosome = second.chromosome == first.chromosome
         if same_chromosome:
-            if are_they_adjacent(first, second, margin_of_error=3):
+            if are_they_adjacent(first, second, margin_of_error=0):
                 pattern = Pattern(
                         chromosome=first.chromosome,
                         start=first.end,

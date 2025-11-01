@@ -6,6 +6,9 @@ INPUT_DIR =   str(projectdir / config["run"]["input"])
 WORK_DIR =    str(projectdir / config["run"]["workdir"] / config["run"]["name"])
 LOGS_DIR =    str(projectdir / config["run"]["logs"]    / config["run"]["name"] / "logs")
 RESULTS_DIR = str(projectdir / config["run"]["results"] / config["run"]["name"])
+margin = config["run"].get("margin", 150)
+min_depth = config["run"].get("min_depth", 10)
+
 
 #print the config file to results directory
 config_file_1  = str(projectdir / config["run"]["workdir"] / config["run"]["name"] / "config.json")
@@ -150,7 +153,7 @@ rule FindRegionsOfInterest:
         "workflow/envs/GrassSV/grasssv.sif"
     shell:
         ("/usr/bin/time -o {log.time} -v " if config.get("use-time", False) != False else "") + \
-        "GrassSV.py find_roi {input.depth} {output} 10 -m 150 1> {log.out} 2> {log.err}"
+        "GrassSV.py find_roi {input.depth} {output} " + str(min_depth) + " -m " + str(margin) + " 1> {log.out} 2> {log.err}"
 
 rule FilterRegions:
     input:
