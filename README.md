@@ -33,7 +33,7 @@ We recomend to install snakemake via conda package manager.
 ## Install a conda package manager
 Any conda envirment will do - you can install miniforge with the following commands:
 
-`wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" miniforge_installer.sh`
+`wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -O miniforge_installer.sh`
 
 `bash miniforge_installer.sh -b -p $HOME`
 
