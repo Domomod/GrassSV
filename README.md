@@ -29,26 +29,47 @@ The below diagram illustrates the idea standing behind GrassSV redcution of asse
 </p>
 
 # Prerequsites 
-We recomend to install snakemake via conda package manager.
+> [!IMPORTANT]
+>
+> To run it's pipeline GrassSV will require a pipeline manager `snakemake` and a HPC (High Performance Computing) friendly container platform `apptainer` (fromerly: `singularity`) 
+
 ## Install a conda package manager
-Any conda envirment will do - you can install miniforge with the following commands:
-
-`wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -O miniforge_installer.sh`
-
-`bash miniforge_installer.sh -b -p $HOME`
+> [!NOTE]
+> We recomend to install snakemake via `conda` package manager. `conda` is already often used among bioinformaticians, and should be available on most **HPC** servers.
+> 
+> Any conda envirment will do - for ex. you can install miniforge with the following commands:
+> `wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -O miniforge_installer.sh`
+> `bash miniforge_installer.sh -b -p $HOME`
 
 ## Create a conda enviroment to run snakemake
-```
-conda create -c conda-forge -c bioconda -n snakemake snakemake
-conda activate snakemake
-conda install snakemake-executor-plugin-slurm
-conda install snakemake-executor-generic-slurm
-```
+> [!IMPORTANT]
+> If you decided to install snakemake using `conda`, you can create a new frsh enviroment just for `snakemake`.
+> 
+> ```
+> conda create -c conda-forge -c bioconda -n snakemake snakemake
+> conda activate snakemake
+> conda install snakemake-executor-plugin-slurm
+> conda install snakemake-executor-generic-slurm
+> ```
+>
+> _It's recommend to create separate enviroments for independent tools, as this makes it much easier to satisfy exact dependencies of said tools._
+
+> [!NOTE]
+>
+> Alternatively you can follow the `snakemake` manual for an alternative instalation (ex. via pip) 
+> https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
+
 ## Install apptainer
-For HPC - apptainer should be already installed by your server administrator. On personal PC you can install it through your OS packagae manager. 
+> [!IMPORTANT]
+> For HPC - `apptainer` (or `singularity`) should be already installed by your server administrator.
+>
+> On personal PC you can install it through your OS package manager. 
+> On ubuntu: `sudo apt install -y apptainer`
 
-On ubuntu: `sudo apt install -y apptainer`
-
+> [!WARNING]  
+> For older linux distributions - apptainer might be still distributed under the name `singularity`
+>
+> In such case call `sudo apt install -y singularity`
 
 # Reproductible execution enviroments:
 ```
@@ -65,52 +86,74 @@ workflow
 │   └── samtools
 │       └── samtools.def
 ```
-Each of required tools comes with a predefined **apptainer** container definition that can be built by issuing `sudo singularity-build <xx>.sif <xx>.def` or `apptainer build <xx>.sif <xx>.def` depending on your apptainer/singularity version.
+Each of required tools comes with a predefined **apptainer** container definition that can be built by issuing `apptainer build <xx>.sif <xx>.def`.
 
-Here is a one liner loop to install all the enviroments - run it from repository root directory:
-
-using singularity-build:
-``(cd workflow/envs; for dir in bowtie2/bowtie2 quast/quast ALGA/alga GrassSV/grasssv samtools/samtools; do (d=$(dirname $dir); b=$(basename $dir); cd $d; yes | sudo singularity-build --force $b.sif $b.def); done
+> [!IMPORTANT]
+> The execution enviroment must exist on your workstation for GrassSV pipelien to execute properly.
+>
+> Here is a one liner loop to install all those enviroments - run it from **repository root** directory: 
+>
+> ``(cd workflow/envs; for dir in bowtie2/bowtie2 quast/quast ALGA/alga GrassSV/grasssv samtools/samtools; do (d=$(dirname $dir); b=$(basename $dir); cd $d; yes | sudo apptainer build $b.sif $b.def); done
 )``
 
-using apptainer build:
-``(cd workflow/envs; for dir in bowtie2/bowtie2 quast/quast ALGA/alga GrassSV/grasssv samtools/samtools; do (d=$(dirname $dir); b=$(basename $dir); cd $d; yes | sudo apptainer build $b.sif $b.def); done
-)``
+> [!WARNING]  
+> For older linux distributions - apptainer might be still distributed under the name `singularity`
+>
+> In such case buiulding is done via `sudo singularity-build <xx>.sif <xx>.def` command, and the full one liner command looks like:
+>
+> ``(cd workflow/envs; for dir in bowtie2/bowtie2 quast/quast ALGA/alga GrassSV/grasssv samtools/samtools; do (d=$(dirname $dir); b=$(basename $dir); cd $d; yes | sudo singularity-build --force $b.sif $b.def); done
+> )``
+> 
 
 
 # Reproductible pipelines using snakemake
-
-You can deploy full GrassSV pipeline easily using snakemake - a workflow management system to create reproducible and scalable data analyses.
-Our pipeline uses **apptainer** contenerization to faciliate dependency instalation on your system. Use of contenerization is **recommended**, but dependencies can be also satisifed by manual instalation / usage of conda or usage of your hpc resource manager module loader.
+> [!IMPORTANT]
+> You can deploy full GrassSV pipeline easily using snakemake - a workflow management system to create reproducible and scalable data analyses.
+>
+> Our pipeline uses **apptainer** contenerization to faciliate dependency instalation on your system. 
+>
+> Use of contenerization is **recommended**, but dependencies can be also satisifed by manual instalation / usage of conda or usage of your hpc resource manager module loader.
 
 ![GrassSV Workflow DAG](dag.svg)
 
 The above diagram illustrates the workflow of the GrassSV pipeline - with 4 pair end reads batches provied as an input.
 
-The snakemake pipeline is run from withing GrassSV main repository folder using command:
+> [!IMPORTANT]
+> The snakemake pipeline is run from withing GrassSV main repository folder using command:
+> 
+> `snakemake --configfile config.yaml --profile profile_dir/`
+>
+> - **config.yaml** - [**REQUIRED**] should point to config defining your exact pipeline run (schema in next section)
+> - **profile_dir/** - [**OPTIONAL**] points to your platform configuration specific to your enviroment specification  
+> 
+> Here is the list of available profiles :
+> ```
+> #For hpc try
+> --profile workflow/profile.slurm.apptainer.generic/   (uses generic executor plugin)
+> --profile workflow/profile.slurm.apptainer/           (uses slurm executor plugin)
+>
+> #For desktop try
+> --sdm apptainer --cores 8 --jobs 8                    (uses apptainer, but no slurm)
+> ```
 
-`snakemake --configfile config.yaml --profile profile_dir/`
+> [!NOTE]
+> You can enable **measuring time and resource** usage for each step by adding `--config use-time=True` to your snakemake execution command.
 
-- **config.yaml** - [**REQUIRED**] should point to config defining your exact pipeline run (schema in next section)
-- **profile_dir/** - [**OPTIONAL**] points to your platform configuration specific to your enviroment specification  
 
-Here is the list of available profiles :
-```
-#For hpc try
---profile workflow/profile.slurm.apptainer.generic/   (uses generic executor plugin)
---profile workflow/profile.slurm.apptainer/           (uses slurm executor plugin)
+> [!WARNING]
+> *To run the pipeline on any other enviroment:*
+> If you intend to run the software on any other configuration, you would need to 
+> - *research the required snakemake profile configuration for your platform (ex. the executor plugin, container platform)* 
+> - *prepare a excution profile based on the ones shipped with GrassSV ex.`workflow/profile.slurm.apptainer`*
+>
+> _You can find list of executor plugins supported by snakemake at; https://snakemake.github.io/snakemake-plugin-catalog/_
 
-#For desktop try
---sdm apptainer --cores 8 --jobs 8                    (uses apptainer, but no slurm)
-```
-
-*To run the pipeline on any other enviroment:*
-
-- *research the required snakemake profile configuration for your platform and pass it into snakemake.*
-
-**Additionally** you can enable **measuring time and resource** usage for each step by adding `--config use-time=True` to your snakemake execution command.
-
-GrassSV pipeline was tested with slurm resource manager, and raw linux enviroment. In case of any troubles running GrassSV - contact, me at dominik.piotr.witczak@gmail.com or through this repository.
+> [!IMPORTANT]
+> GrassSV pipeline was tested with **slurm resource manager** on a HPC server without root access,
+> 
+> and a raw linux enviroment with root access.
+>
+> In case of any troubles running GrassSV - contact, me at dominik.piotr.witczak@gmail.com or through this repository.
 
 # Example run configuration file
 ```
@@ -177,7 +220,7 @@ For processing human genome (30x coverage) a more powerful infrastructure was ne
 ## Dependencies
 
 ### GrassSV login-node requrements:
-**required:** snakemake >7.0.0, **recommended:** apptainer **alternatively:** conda
+**required:** snakemake >7.0.0, **recommended:** apptainer
 
 ### GrassSV.py python requirements:
 **required:** numpy, pandas, argparse
