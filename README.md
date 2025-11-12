@@ -35,11 +35,13 @@ The below diagram illustrates the idea standing behind GrassSV redcution of asse
 
 ## Install a conda package manager
 > [!NOTE]
-> We recomend to install snakemake via `conda` package manager. `conda` is already often used among bioinformaticians, and should be available on most **HPC** servers.
+> We recommend installing snakemake via `conda` package manager. `conda` is already often used among bioinformaticians, and should be available on most **HPC** servers.
 > 
 > Any conda envirment will do - for ex. you can install miniforge with the following commands:
-> `wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -O miniforge_installer.sh`
-> `bash miniforge_installer.sh -b -p $HOME`
+> ```
+> wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -O miniforge_installer.sh
+> bash miniforge_installer.sh -u -b -p $HOME/miniforge3
+> ```
 
 ## Create a conda enviroment to run snakemake
 > [!IMPORTANT]
